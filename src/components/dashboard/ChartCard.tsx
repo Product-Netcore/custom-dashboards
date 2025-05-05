@@ -275,7 +275,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-black hover:no-underline hover:text-gray-700" onClick={handleViewAnalysis}>
+        <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#143F93] hover:no-underline hover:text-blue-700" onClick={handleViewAnalysis}>
           <span>View analysis</span>
           <ArrowRight size={18} />
         </Button>
