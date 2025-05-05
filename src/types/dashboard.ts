@@ -1,3 +1,4 @@
+import React from 'react'; // Import React for ElementType
 
 export type DashboardType = 'system' | 'custom';
 
@@ -5,6 +6,7 @@ export interface Dashboard {
   id: string;
   name: string;
   type: DashboardType;
+  icon?: React.ElementType; // Add optional icon property
   isPinned?: boolean;
   charts: Chart[];
   createdAt: Date;
@@ -20,9 +22,10 @@ export interface Chart {
   title: string;
   description: string;
   type: ChartType;
-  displayMode: DisplayMode;
+  displayMode: 'chart' | 'kpi' | 'chart_kpi' | 'table' | 'transposed_table'; // Updated display modes
   isFullWidth: boolean;
-  data: any; // Would be replaced with actual chart data structure
+  isBodyHidden?: boolean; // Renamed from isCollapsed
+  data: any; // Keep as any for flexibility with mock data
   createdAt: Date;
   updatedAt: Date;
 }

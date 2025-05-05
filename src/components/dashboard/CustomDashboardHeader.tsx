@@ -22,7 +22,7 @@ interface CustomDashboardHeaderProps {
   onAddAnalysis: (type?: ChartType) => void;
   onSubscribe: () => void;
   isSystemDashboard?: boolean;
-  onSaveChart: (type: 'chart' | 'table' | 'studio') => void;
+  hasCharts: boolean;
 }
 
 const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
@@ -36,7 +36,7 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
   onAddAnalysis,
   onSubscribe,
   isSystemDashboard = false,
-  onSaveChart,
+  hasCharts,
 }) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,20 +87,19 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      className="bg-[#00A5EC] hover:bg-[#0095D2] text-white"
+                      className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-netcore-save-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
                     >
-                      <Save className="mr-2 h-4 w-4" />
                       Save
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="rounded-md border shadow-md">
-                    <DropdownMenuItem onClick={() => onSaveChart('chart')}>
+                    <DropdownMenuItem onClick={() => onAddAnalysis('funnel')}>
                       Save chart to dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onSaveChart('table')}>
+                    <DropdownMenuItem onClick={() => onAddAnalysis('behavior')}>
                       Save table to dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onSaveChart('studio')}>
+                    <DropdownMenuItem onClick={() => onAddAnalysis('rfm')}>
                       Save to My Studio
                     </DropdownMenuItem>
                   </DropdownMenuContent>

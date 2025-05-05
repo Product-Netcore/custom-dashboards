@@ -1,58 +1,56 @@
-
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
-  BarChart2,
-  Target,  // Replacing Funnel with Target
-  Users,
-  Activity
+  Target,       // For Funnel analysis
+  Users,        // For Cohort analysis
+  Activity,     // For Behavior analysis
+  LineChart,    // For RFM analysis
+  GitBranch     // For User Path analysis
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ChartType } from '@/types/dashboard';
 
 interface EmptyDashboardProps {
-  onAddAnalysis: () => void;
+  onAddAnalysis: (type?: ChartType) => void;
 }
 
 const EmptyDashboard: React.FC<EmptyDashboardProps> = ({ onAddAnalysis }) => {
-  const navigate = useNavigate();
-
   const analysisTiles = [
+    {
+      title: 'Funnel analysis',
+      icon: Target,
+      type: 'funnel' as ChartType,
+      tooltip: 'Track conversion steps and drop-offs across journeys'
+    },
+    {
+      title: 'RFM analysis',
+      icon: LineChart,
+      type: 'rfm' as ChartType,
+      tooltip: 'Segment customers by recency, frequency, and monetary value'
+    },
+    {
+      title: 'Cohort analysis',
+      icon: Users,
+      type: 'cohort' as ChartType,
+      tooltip: 'Measure retention across cohorts and time intervals'
+    },
+    {
+      title: 'User Path analysis',
+      icon: GitBranch,
+      type: 'userPath' as ChartType,
+      tooltip: 'Visualize user journeys through your product'
+    },
     {
       title: 'Behavior analysis',
       icon: Activity,
-      tooltip: 'View user interactions like sessions, clicks, and events',
-      path: '/behavior'
-    },
-    {
-      title: 'Funnel analysis',
-      icon: Target,  // Replaced Funnel with Target
-      tooltip: 'Track conversion steps and drop-offs across journeys',
-      path: '/funnel'
-    },
-    {
-      title: 'Retention analysis',
-      icon: Users,
-      tooltip: 'Measure user retention across cohorts and time intervals',
-      path: '/retention'
-    },
-    {
-      title: 'Session and source analysis',
-      icon: BarChart2,
-      tooltip: 'Analyze where your users come from and what they do',
-      path: '/session'
+      type: 'behavior' as ChartType,
+      tooltip: 'View user interactions like sessions, clicks, and events'
     }
   ];
 
   return (
-    <div className="flex-1 p-6">
-      <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-foreground">Add your first analysis</h1>
-        <Button onClick={onAddAnalysis} className="bg-netcore-blue hover:bg-netcore-dark-blue">
-          + Add Analysis
-        </Button>
-      </div>
+    <div className="flex-1">
+      <h1 className="text-2xl font-semibold text-foreground mb-8">Add your first analysis</h1>
 
       <div className="grid md:grid-cols-2 gap-6">
         {analysisTiles.map((tile, index) => {
@@ -63,7 +61,7 @@ const EmptyDashboard: React.FC<EmptyDashboardProps> = ({ onAddAnalysis }) => {
                 <TooltipTrigger asChild>
                   <Card 
                     className="cursor-pointer transition-all hover:shadow-lg hover:border-netcore-blue"
-                    onClick={() => navigate(tile.path)}
+                    onClick={() => onAddAnalysis(tile.type)}
                   >
                     <CardContent className="p-6 flex flex-col items-center space-y-4">
                       <Icon className="w-12 h-12 text-netcore-blue" />

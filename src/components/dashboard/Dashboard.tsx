@@ -1,33 +1,57 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  DndContext, 
+  closestCenter, 
+  KeyboardSensor, 
+  PointerSensor, 
+  useSensor, 
+  useSensors, 
+  DragEndEvent 
+} from '@dnd-kit/core';
+import { 
+  arrayMove, 
+  SortableContext, 
+  sortableKeyboardCoordinates, 
+  verticalListSortingStrategy 
+} from '@dnd-kit/sortable';
 import { useDashboard } from '@/contexts/DashboardContext';
 import ChartCard from './ChartCard';
-import SaveChartModal from './SaveChartModal';
 import { Chart, ChartType } from '@/types/dashboard';
 import EmptyDashboard from './EmptyDashboard';
-import SampleChartCard from './SampleChartCard';
 import { useToast } from '@/hooks/use-toast';
-import CreateDashboardModal from './CreateDashboardModal';
 import SubscriptionModal from './SubscriptionModal';
-import SystemDashboardHeader from './SystemDashboardHeader';
 import CustomDashboardHeader from './CustomDashboardHeader';
 import InsightGenerator from '@/components/insight/InsightGenerator';
+import AddAnalysisModal from './AddAnalysisModal';
 
 const Dashboard: React.FC = () => {
   const { 
     currentDashboard, 
     renameDashboard,
+    reorderCharts,
     currentView 
   } = useDashboard();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [newTitle, setNewTitle] = useState('');
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [sampleChart, setSampleChart] = useState<Chart | null>(null);
+  const [addAnalysisModalOpen, setAddAnalysisModalOpen] = useState(false);
+  const [selectedAnalysisType, setSelectedAnalysisType] = useState<ChartType | null>(null);
   const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
   const { toast } = useToast();
-  const [saveChartType, setSaveChartType] = useState<'chart' | 'table' | 'studio'>('chart');
+
+  // DND Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  useEffect(() => {
+    if (currentDashboard) {
+      setNewTitle(currentDashboard.name);
+    }
+  }, [currentDashboard]);
 
   const handleEditTitle = () => {
     if (!currentDashboard) return;
@@ -62,50 +86,33 @@ const Dashboard: React.FC = () => {
   };
 
   const handleAddAnalysis = (type?: ChartType) => {
-    if (!currentDashboard) return;
-
-    const newChart: Chart = {
-      id: `chart-${Date.now()}`,
-      title: `New ${type ? type.charAt(0).toUpperCase() + type.slice(1) : 'Generic'} Analysis`,
-      description: `This is a new ${type || 'generic'} analysis`,
-      type: type || 'funnel',
-      displayMode: 'chart',
-      isFullWidth: false,
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        values: [12, 19, 3, 5, 2]
-      },
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    setSampleChart(newChart);
-    setSaveModalOpen(true);
+    if (!type) {
+      console.warn("handleAddAnalysis called without a type.");
+      toast({ title: "Info", description: "Please select a specific analysis type.", variant: "default" });
+      return; 
+    }
+    setSelectedAnalysisType(type);
+    setAddAnalysisModalOpen(true);
   };
 
-  const handleSaveChart = (type: 'chart' | 'table' | 'studio') => {
-    setSaveChartType(type);
-    setSampleChart({
-      id: `chart-${Date.now()}`,
-      title: 'Sample Analysis',
-      description: 'Sample description',
-      type: 'bar',
-      displayMode: type === 'chart' ? 'chart' : 'table',
-      isFullWidth: false,
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        values: [4000, 3000, 2000, 2780, 1890]
-      },
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-    setSaveModalOpen(true);
-  };
+  // DND Handler
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && currentDashboard) {
+      const oldIndex = currentDashboard.charts.findIndex(chart => chart.id === active.id);
+      const newIndex = currentDashboard.charts.findIndex(chart => chart.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderCharts(currentDashboard.id, oldIndex, newIndex);
+      }
+    }
+  }
 
   // Show Insight Generator when selected
   if (currentView === 'insightGenerator') {
     return (
-      <div className="flex-1">
+      <div className="flex-1 bg-netcore-dashboard-bg p-6">
         <InsightGenerator />
       </div>
     );
@@ -113,21 +120,23 @@ const Dashboard: React.FC = () => {
 
   if (!currentDashboard) {
     return (
-      <div className="flex-1 p-6 flex items-center justify-center">
+      <div className="flex-1 bg-netcore-dashboard-bg p-6 flex items-center justify-center">
         <p className="text-muted-foreground">Select a dashboard from the sidebar</p>
       </div>
     );
   }
 
   const isSystemDashboard = currentDashboard.type === 'system';
+  const charts = currentDashboard.charts;
+  const hasCharts = charts.length > 0;
   
   console.log('Current dashboard ID:', currentDashboard.id);
   console.log('Current dashboard type:', currentDashboard.type);
   console.log('Is system dashboard:', isSystemDashboard);
 
   return (
-    <div className="flex-1">
-      <div className="p-6">
+    <div className="flex-1 bg-netcore-dashboard-bg">
+      <div className="p-6 h-full flex flex-col">
         <CustomDashboardHeader
           dashboard={currentDashboard}
           isEditingTitle={isEditingTitle}
@@ -139,7 +148,7 @@ const Dashboard: React.FC = () => {
           onAddAnalysis={handleAddAnalysis}
           onSubscribe={() => setSubscribeModalOpen(true)}
           isSystemDashboard={isSystemDashboard}
-          onSaveChart={handleSaveChart}
+          hasCharts={hasCharts}
         />
 
         <SubscriptionModal
@@ -148,29 +157,38 @@ const Dashboard: React.FC = () => {
           dashboardName={currentDashboard?.name || ''}
         />
 
-        {currentDashboard.charts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4">
-            {currentDashboard.charts.map((chart) => (
-              <ChartCard key={chart.id} chart={chart} dashboardId={currentDashboard.id} />
-            ))}
-          </div>
-        ) : (
-          <EmptyDashboard onAddAnalysis={() => handleAddAnalysis()} />
-        )}
-        
-        {sampleChart && (
-          <SaveChartModal
-            chart={sampleChart}
-            open={saveModalOpen}
-            onOpenChange={setSaveModalOpen}
-            chartType={saveChartType}
-          />
-        )}
+        <div className="flex-1 overflow-y-auto">
+          {hasCharts ? (
+            <DndContext 
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext 
+                items={charts.map(chart => chart.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {charts.map((chart) => (
+                    <ChartCard 
+                      key={chart.id} 
+                      chart={chart} 
+                      dashboardId={currentDashboard.id} 
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <EmptyDashboard onAddAnalysis={handleAddAnalysis} />
+          )}
+        </div>
       </div>
-      
-      <CreateDashboardModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
+      <AddAnalysisModal 
+        open={addAnalysisModalOpen}
+        onOpenChange={setAddAnalysisModalOpen}
+        analysisType={selectedAnalysisType}
+        dashboardId={currentDashboard?.id ?? null}
       />
     </div>
   );

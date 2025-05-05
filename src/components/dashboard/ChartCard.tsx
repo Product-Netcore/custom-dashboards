@@ -1,343 +1,286 @@
-
-import React, { useState } from 'react';
-import { Chart as ChartType, DisplayMode } from '@/types/dashboard';
+import React, { useState, useRef, useEffect } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Chart, ChartType } from '@/types/dashboard';
 import { useDashboard } from '@/contexts/DashboardContext';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger, 
+  DropdownMenuSeparator 
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { 
-  RefreshCcw, 
-  Edit, 
-  Copy, 
-  Download, 
-  Trash2, 
-  Info, 
-  ArrowUpDown, 
-  LayoutGrid 
-} from 'lucide-react';
+import { MoreVertical, GripVertical, Download as DownloadIcon, ArrowRight, RefreshCw, Expand, Minimize, ChevronDown, Trash2, Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { BarChart } from 'recharts';
+import { useNavigate } from 'react-router-dom';
+import { Input } from '@/components/ui/input';
 
-// Sample chart components for different display modes
-const ChartView = ({ data }: { data: any }) => (
-  <div className="h-40 w-full flex items-center justify-center bg-netcore-light-blue bg-opacity-50 rounded-md">
-    <BarChart width={300} height={150} data={data.values.map((val: number, i: number) => ({ name: data.labels[i], value: val }))}>
-      {/* Chart components would go here */}
-    </BarChart>
-  </div>
-);
+// --- Placeholder Chart Visualizations ---
+const PlaceholderChart: React.FC<{ type: ChartType, data: any }> = ({ type, data }) => {
+  // Basic styling for placeholder - we might adjust height based on new card structure
+  const baseStyle = "min-h-[200px] bg-gray-50 rounded flex items-center justify-center text-gray-500 p-4 text-center"; // Reduced default height slightly
+  
+  switch (type) {
+    case 'funnel':
+      return <div className={baseStyle}>Mock Funnel Chart<br/>{data?.labels?.join(' -> ')}</div>;
+    case 'rfm':
+      return <div className={baseStyle}>Mock RFM Heatmap</div>;
+    case 'cohort':
+      return <div className={baseStyle}>Mock Cohort Grid</div>;
+    case 'userPath':
+      return <div className={baseStyle}>Mock User Path Flow</div>;
+    case 'behavior':
+      return <div className={baseStyle}>Mock Behavior Chart<br/>({data?.labels?.join(', ')})</div>;
+    default:
+      return <div className={baseStyle}>Chart Type: {type}</div>;
+  }
+};
 
-const KpiView = ({ data }: { data: any }) => (
-  <div className="h-40 w-full flex flex-col items-center justify-center bg-netcore-light-blue bg-opacity-50 rounded-md">
-    <span className="text-4xl font-bold text-netcore-blue">
-      {data.values.reduce((a: number, b: number) => a + b, 0)}
-    </span>
-    <span className="text-sm text-muted-foreground">Total Value</span>
-  </div>
-);
-
-const ChartAndKpiView = ({ data }: { data: any }) => (
-  <div className="h-40 w-full flex items-center justify-center space-x-4 bg-netcore-light-blue bg-opacity-50 rounded-md">
-    <div className="flex-1">
-      <ChartView data={data} />
-    </div>
-    <div className="w-1/3">
-      <KpiView data={data} />
-    </div>
-  </div>
-);
-
-const TableView = ({ data }: { data: any }) => (
-  <div className="h-40 w-full overflow-auto bg-netcore-light-blue bg-opacity-50 rounded-md">
-    <table className="min-w-full">
-      <thead>
-        <tr>
-          <th className="px-4 py-2 text-left">Label</th>
-          <th className="px-4 py-2 text-left">Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.labels.map((label: string, i: number) => (
-          <tr key={i}>
-            <td className="px-4 py-2 border-t">{label}</td>
-            <td className="px-4 py-2 border-t">{data.values[i]}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
-
-const TransposedTableView = ({ data }: { data: any }) => (
-  <div className="h-40 w-full overflow-auto bg-netcore-light-blue bg-opacity-50 rounded-md">
-    <table className="min-w-full">
-      <thead>
-        <tr>
-          <th className="px-4 py-2 text-left">Metric</th>
-          {data.labels.map((label: string, i: number) => (
-            <th key={i} className="px-4 py-2 text-left">{label}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td className="px-4 py-2 border-t">Value</td>
-          {data.values.map((value: number, i: number) => (
-            <td key={i} className="px-4 py-2 border-t">{value}</td>
-          ))}
-        </tr>
-      </tbody>
-    </table>
-  </div>
-);
-
+// --- Chart Card Component ---
 interface ChartCardProps {
-  chart: ChartType;
+  chart: Chart;
   dashboardId: string;
 }
 
 const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
-  const { removeChart, toggleChartWidth } = useDashboard();
-  const [displayMode, setDisplayMode] = useState<DisplayMode>(chart.displayMode);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { removeChart, renameChart, toggleChartWidth } = useDashboard();
+  const [isHovering, setIsHovering] = useState(false);
+  const navigate = useNavigate();
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState(chart.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    // Simulate a refresh operation
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1000);
+  const { 
+    attributes, 
+    listeners, 
+    setNodeRef, 
+    transform, 
+    transition, 
+    isDragging 
+  } = useSortable({ id: chart.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 100 : 1, // Higher z-index for dragging
+    opacity: isDragging ? 0.8 : 1,
   };
 
-  const handleDelete = () => {
-    removeChart(dashboardId, chart.id);
+  const handleDelete = () => removeChart(dashboardId, chart.id);
+  const handleRefresh = () => console.log(`Refreshing chart: ${chart.title}`);
+  const handleDownload = (format: 'png' | 'csv') => console.log(`Downloading chart ${chart.title} as ${format}`);
+  const handleViewAnalysis = () => navigate(`/analysis/${chart.type}/${chart.id}`);
+
+  // Title Editing Handlers
+  const handleEditTitle = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card drag/other actions
+    setNewTitle(chart.title);
+    setIsEditingTitle(true);
+    // Focus and select text slightly after rendering
+    setTimeout(() => titleInputRef.current?.select(), 10);
   };
 
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTitle(e.target.value);
+  };
+
+  const handleTitleSave = () => {
+    if (newTitle.trim() && newTitle.trim() !== chart.title) {
+      renameChart(dashboardId, chart.id, newTitle.trim());
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTitleSave();
+    } else if (e.key === 'Escape') {
+      setNewTitle(chart.title); // Revert changes
+      setIsEditingTitle(false);
+    }
+  };
+
+  // Effect to update local title if chart prop changes (e.g., after renaming elsewhere)
+  useEffect(() => {
+    if (!isEditingTitle) {
+        setNewTitle(chart.title);
+    }
+  }, [chart.title, isEditingTitle]);
+
+  // Determine if title needs truncation (simple length check for example)
+  const isTruncated = chart.title.length > 25; // Adjust based on visual needs
+
+  // Handler to toggle chart width using context function
   const handleToggleWidth = () => {
     toggleChartWidth(dashboardId, chart.id);
   };
 
-  const handleCopyLink = () => {
-    // In a real app, this would copy a shareable link
-    navigator.clipboard.writeText(`https://netcore.cloud/dashboard/${dashboardId}/chart/${chart.id}`);
-  };
-
-  const renderChart = () => {
-    switch (displayMode) {
-      case 'chart':
-        return <ChartView data={chart.data} />;
-      case 'kpi':
-        return <KpiView data={chart.data} />;
-      case 'chartAndKpi':
-        return <ChartAndKpiView data={chart.data} />;
-      case 'table':
-        return <TableView data={chart.data} />;
-      case 'transposedTable':
-        return <TransposedTableView data={chart.data} />;
-      default:
-        return <ChartView data={chart.data} />;
-    }
-  };
-
   return (
-    <Card className={cn(
-      "transition-all duration-300 ease-in-out", 
-      chart.isFullWidth ? "col-span-2" : "col-span-1"
-    )}>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <CardTitle className="text-base">{chart.title}</CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{chart.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center space-x-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7" 
-                    onClick={handleRefresh}
-                  >
-                    <RefreshCcw 
-                      className={cn(
-                        "h-4 w-4", 
-                        isRefreshing && "animate-spin"
-                      )} 
-                    />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Refresh this chart with the latest data.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit filters or metrics of this analysis.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7" 
-                    onClick={handleCopyLink}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Copy shareable link to this chart.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem>Export as PNG</DropdownMenuItem>
-                      <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Export as PNG or CSV.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7" 
-                    onClick={handleToggleWidth}
-                  >
-                    <LayoutGrid className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Switch between half and full width.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={handleDelete}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Remove this chart from the dashboard.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2 mt-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className="h-6 text-xs text-muted-foreground flex items-center space-x-1"
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex flex-col bg-white border border-[#DDE2EE] rounded-[5px] shadow-sm group",
+        chart.isFullWidth && "md:col-span-2"
+      )}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      <div className="flex flex-row justify-between items-center p-4 gap-2.5 bg-white w-full">
+        <div className="flex flex-row items-center gap-2 flex-1 min-w-0">
+          <button 
+            {...attributes} 
+            {...listeners} 
+            className={cn(
+              "cursor-grab text-[#6F6F8D] p-1 opacity-0 group-hover:opacity-100 focus:outline-none transition-opacity",
+              isDragging && "cursor-grabbing",
+              isEditingTitle && "invisible"
+             )} 
+             aria-label="Drag to reorder chart"
+             style={{ width: '24px', height: '24px' }}
+          >
+            <GripVertical size={18} />
+          </button>
+          
+          <div className="flex-1 min-w-0 relative group/title">
+            {isEditingTitle ? (
+              <Input
+                ref={titleInputRef}
+                value={newTitle}
+                onChange={handleTitleChange}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black h-8 px-1 border-blue-500 ring-1 ring-blue-500"
+              />
+            ) : (
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <h3 
+                      className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors pr-4"
+                      onClick={handleEditTitle} 
+                      title={isTruncated ? chart.title : undefined}
                     >
-                      <span>Display Mode:</span>
-                      <span className="font-medium">
-                        {displayMode === 'chart' ? 'Chart' : 
-                         displayMode === 'kpi' ? 'KPI' : 
-                         displayMode === 'chartAndKpi' ? 'Chart + KPI' : 
-                         displayMode === 'table' ? 'Table' : 
-                         'Transposed Table'}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setDisplayMode('chart')}>
-                      Chart View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDisplayMode('kpi')}>
-                      KPI View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDisplayMode('chartAndKpi')}>
-                      Chart + KPI View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDisplayMode('table')}>
-                      Table View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setDisplayMode('transposedTable')}>
-                      Transposed Table View
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Switch to your preferred chart view.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <div className="text-xs text-muted-foreground flex items-center h-6">
-            <ArrowUpDown className="h-3 w-3 mr-1" />
-            <span>Drag to reorder</span>
+                      {chart.title}
+                    </h3>
+                  </TooltipTrigger>
+                  {isTruncated && (
+                    <TooltipContent>
+                      <p>{chart.title}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            {!isEditingTitle && (
+              <button 
+                onClick={handleEditTitle}
+                className="absolute top-1/2 -translate-y-1/2 text-gray-400 opacity-0 group-hover/title:opacity-100 hover:text-blue-600 transition-opacity focus:outline-none"
+                style={{ right: "8px" }}
+                aria-label="Edit chart title"
+               >
+                 <Edit2 size={14} />
+               </button>
+             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {renderChart()}
-      </CardContent>
-    </Card>
+
+        <div className="flex flex-row items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                 variant="outline" 
+                 className="flex items-center justify-between gap-2.5 bg-[#F8F8F8] rounded-[4px] px-3 py-2 h-9 border-none hover:bg-gray-100 w-[174px]"
+              >
+                 <span className="flex-1 font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#6F6F8D] truncate text-left"> 
+                   {chart.displayMode.replace('_', ' + ').replace(/\b\w/g, l => l.toUpperCase())} 
+                 </span>
+                 <ChevronDown size={16} className="text-[#6F6F8D] flex-shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto min-w-[174px]">
+              <DropdownMenuItem disabled className="truncate">Chart</DropdownMenuItem>
+              <DropdownMenuItem disabled className="truncate">KPI</DropdownMenuItem>
+              <DropdownMenuItem disabled className="truncate">Chart + KPI</DropdownMenuItem>
+              <DropdownMenuItem disabled className="truncate">Table view</DropdownMenuItem>
+              <DropdownMenuItem disabled className="truncate">Transposed table view</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-[#6F6F8D] hover:bg-gray-100 rounded">
+                <MoreVertical size={18} />
+                <span className="sr-only">Chart options</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-[180px] bg-white rounded-lg shadow-[0px_4px_16px_rgba(23,23,58,0.12)] py-2 px-0 z-50 font-sans"
+            >
+              <DropdownMenuItem 
+                onClick={handleRefresh} 
+                className="flex items-center gap-2 py-2.5 px-4 text-sm font-semibold text-[#17173A] focus:bg-[#F4F8FF] focus:text-[#17173A] cursor-pointer rounded-none tracking-[0.42px]"
+              >
+                <RefreshCw className="h-4 w-4 text-[#17173A]" />
+                <span className="flex-1">Refresh</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleToggleWidth}
+                className="flex items-center gap-2 py-2.5 px-4 text-sm font-semibold text-[#17173A] focus:bg-[#F4F8FF] focus:text-[#17173A] cursor-pointer rounded-none tracking-[0.42px]"
+              >
+                {chart.isFullWidth ? (
+                  <Minimize className="h-4 w-4 text-[#17173A]" /> 
+                ) : (
+                  <Expand className="h-4 w-4 text-[#17173A]" /> 
+                )}
+                <span className="flex-1">{chart.isFullWidth ? 'Collapse Width' : 'Expand Width'}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-[#DDE2EE] my-1 h-[1px]"/>
+              <DropdownMenuItem 
+                className="flex items-center gap-2 py-2.5 px-4 text-sm font-semibold text-[#F05C5C] focus:bg-red-50 focus:text-[#F05C5C] cursor-pointer rounded-none tracking-[0.42px]" 
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-4 w-4 text-[#F05C5C]" />
+                <span className="flex-1">Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {!chart.isBodyHidden && <hr className="border-t border-[#DDE2EE] w-full" />}
+
+      {!chart.isBodyHidden && (
+        <div className="flex-1 w-full bg-white">
+          <PlaceholderChart type={chart.type} data={chart.data} />
+        </div>
+      )}
+
+      <hr className="border-t border-[#DDE2EE] w-full" />
+
+      <div className="flex flex-row justify-between items-center p-4 gap-2.5 bg-white w-full">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#6F6F8D] hover:no-underline">
+              <span>Download</span>
+              <DownloadIcon size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="font-sans">
+            <DropdownMenuItem onClick={() => handleDownload('png')}>Export as PNG</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDownload('csv')}>Export as CSV</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-black hover:no-underline hover:text-gray-700" onClick={handleViewAnalysis}>
+          <span>View analysis</span>
+          <ArrowRight size={18} />
+        </Button>
+      </div>
+    </div>
   );
 };
 

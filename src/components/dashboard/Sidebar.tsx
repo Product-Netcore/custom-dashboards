@@ -1,35 +1,61 @@
-
 import React, { useState } from 'react';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { Dashboard } from '@/types/dashboard';
-import { Pin, Search, Trash2, Plus, MessageSquare } from 'lucide-react';
+import { Home, Users, Activity, CircleDollarSign, Briefcase, ChevronLeft, Pin, Search, Plus, MessageSquare, Trash2, LayoutGrid } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import DeleteDashboardModal from './DeleteDashboardModal';
-import CreateDashboardModal from './CreateDashboardModal';
 import { useToast } from "@/hooks/use-toast";
+
+interface NavItem {
+  id: string;
+  name: string;
+  icon: React.ElementType;
+}
 
 const Sidebar: React.FC = () => {
   const { 
-    systemDashboards, 
-    filteredDashboards, 
+    systemDashboards,
+    filteredDashboards,
     currentDashboard,
     currentView,
     setCurrentDashboard, 
     setCurrentView,
-    searchQuery, 
+    searchQuery,
     setSearchQuery,
     togglePinDashboard,
-    deleteDashboard
+    deleteDashboard,
+    createDashboard
   } = useDashboard();
 
   const [dashboardToDelete, setDashboardToDelete] = useState<Dashboard | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleDashboardClick = (dashboard: Dashboard) => {
+  const navItems: NavItem[] = [
+    { id: 'home', name: 'Home', icon: Home },
+    { id: 'engagement', name: 'Engagement', icon: Users },
+    { id: 'behaviour', name: 'Behaviour', icon: Activity },
+    { id: 'revenue', name: 'Revenue', icon: CircleDollarSign },
+    { id: 'co-marketer', name: 'Co-marketer', icon: Briefcase },
+  ];
+
+  const activeItemId = currentDashboard && currentDashboard.type === 'system' 
+    ? systemDashboards.find(d => d.id === currentDashboard.id)?.id
+    : null;
+
+  const handleItemClick = (item: NavItem) => {
+    const targetDashboard = systemDashboards.find(d => d.id.startsWith(`system-${item.id}`) || d.name.toLowerCase() === item.id); 
+    if (targetDashboard) {
+      setCurrentDashboard(targetDashboard);
+      setCurrentView('dashboard');
+    } else {
+      console.warn(`System dashboard for ${item.name} (id: ${item.id}) not found`);
+    }
+  };
+
+  const handleCustomDashboardClick = (dashboard: Dashboard) => {
     setCurrentDashboard(dashboard);
     setCurrentView('dashboard');
   };
@@ -55,171 +81,162 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  const handleCreateClick = () => {
-    if (filteredDashboards.length >= 10) {
+  const handleCreateDashboard = () => {
+    const MAX_DASHBOARDS = 300;
+    if (filteredDashboards.length >= MAX_DASHBOARDS) {
       toast({
         title: "Dashboard Limit Reached",
-        description: "You've reached the limit of 10 dashboards. Please delete an existing one to continue.",
+        description: `You've reached the limit of ${MAX_DASHBOARDS} dashboards. Please delete an existing one to continue.`,
         variant: "destructive"
       });
       return;
     }
-    setIsCreateModalOpen(true);
+    const newDashboardName = `Custom dashboard ${filteredDashboards.length + 1}`;
+    createDashboard(newDashboardName);
   };
   
   const handleInsightGeneratorClick = () => {
     setCurrentView('insightGenerator');
   };
 
+  const handleMinimizeClick = () => {
+    console.log("Minimize clicked");
+  };
+
   return (
-    <aside className="bg-sidebar h-screen w-64 border-r border-border flex flex-col">
+    <aside className="bg-white h-[calc(100vh-4rem)] w-64 border-r border-border flex flex-col">
       <div className="p-4 border-b">
-        <h1 className="text-xl font-bold text-netcore-blue">Netcore Cloud</h1>
-        <p className="text-sm text-muted-foreground">Analytics Dashboard</p>
+        <h1 className="text-2xl font-semibold text-gray-800">Dashboards</h1>
       </div>
       
-      <nav className="flex-1 overflow-y-auto p-2">
-        <div className="py-2">
-          <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            System Dashboards
-          </h2>
+      <div className="flex-1 overflow-y-auto"> 
+        <nav className="p-2 pt-4"> 
           <ul>
-            {systemDashboards.map((dashboard) => (
-              <li key={dashboard.id}>
+            {navItems.map((item) => (
+              <li key={item.id}>
                 <button
-                  onClick={() => handleDashboardClick(dashboard)}
+                  onClick={() => handleItemClick(item)}
                   className={cn(
-                    "w-full text-left px-2 py-2 text-sm rounded-md mb-1 flex items-center",
-                    currentDashboard?.id === dashboard.id && currentView === 'dashboard'
-                      ? "bg-netcore-blue text-white"
-                      : "hover:bg-muted"
+                    "w-full text-left px-3 py-2.5 text-sm rounded-md mb-1 flex items-center gap-3",
+                    activeItemId === item.id
+                      ? "bg-blue-100 text-netcore-blue font-medium" 
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
-                  {dashboard.name}
+                  <item.icon className={cn("h-5 w-5", activeItemId === item.id ? "text-netcore-blue" : "text-gray-500")} /> 
+                  {item.name}
                 </button>
               </li>
             ))}
           </ul>
-        </div>
+        </nav>
 
-        <div className="py-2 border-t mt-2">
-          <div className="flex items-center justify-between mb-2 px-2">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <hr className="mx-4 my-3 border-gray-200" />
+
+        <div className="px-4 pb-2 space-y-3"> 
+          <div className="flex items-center justify-between"> 
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Custom Dashboards
             </h2>
-            <span className="text-xs text-muted-foreground">
-              {filteredDashboards.length}/10
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-2 px-2">
-            <TooltipProvider>
+            <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
+                  <Button 
                     variant="ghost"
-                    className="w-full justify-start text-netcore-blue hover:text-netcore-blue hover:bg-netcore-light-blue transition-colors px-2 py-1 h-8"
-                    onClick={handleCreateClick}
+                    size="icon"
+                    className="h-6 w-6 text-netcore-blue hover:bg-blue-100"
+                    onClick={handleCreateDashboard}
                   >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Create Dashboard
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>Create a new custom dashboard to pin charts and KPIs</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search dashboards..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-8 h-9 text-sm"
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Quickly find a dashboard by name. Pinned dashboards appear on top.</p>
+                <TooltipContent side="top">
+                  <p>Create Dashboard ({filteredDashboards.length}/300)</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
+
+          <div className="relative"> 
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search dashboards..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-sm rounded-md border-gray-300 focus:border-netcore-blue focus:ring-netcore-blue"
+            />
+          </div>
           
-          <ul>
+          <ul className="space-y-1 pt-1">
             {filteredDashboards.length > 0 ? (
               filteredDashboards.map((dashboard) => (
                 <li key={dashboard.id}>
-                  <div className="relative group">
+                  <div className="relative group flex items-center justify-between hover:bg-gray-100 rounded-md pr-1"> 
                     <button
-                      onClick={() => handleDashboardClick(dashboard)}
+                      onClick={() => handleCustomDashboardClick(dashboard)}
                       className={cn(
-                        "w-full text-left px-2 py-2 text-sm rounded-md mb-1 flex items-center justify-between",
-                        currentDashboard?.id === dashboard.id && currentView === 'dashboard'
-                          ? "bg-netcore-blue text-white"
-                          : "hover:bg-muted"
+                        "flex-1 text-left px-3 py-2 text-sm truncate", 
+                        currentDashboard?.id === dashboard.id
+                          ? "text-netcore-blue font-medium" 
+                          : "text-gray-700"
                       )}
+                      title={dashboard.name} 
                     >
-                      <span>{dashboard.name}</span>
-                      <div className="flex items-center gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => handleDeleteClick(e, dashboard)}
-                                className={cn(
-                                  "opacity-0 group-hover:opacity-100 transition-opacity",
-                                  currentDashboard?.id === dashboard.id && currentView === 'dashboard' ? "text-white" : "text-muted-foreground"
-                                )}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Delete this dashboard permanently</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => handlePinClick(e, dashboard.id)}
-                                className={cn(
-                                  "opacity-0 group-hover:opacity-100 transition-opacity",
-                                  dashboard.isPinned ? "opacity-100" : "",
-                                  currentDashboard?.id === dashboard.id && currentView === 'dashboard' ? "text-white" : "text-muted-foreground"
-                                )}
-                              >
-                                <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Pin dashboards to keep them at the top for quick access.</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
+                      {dashboard.name}
                     </button>
+                    <TooltipProvider> 
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                           <button
+                              onClick={(e) => handlePinClick(e, dashboard.id)}
+                              className={cn(
+                                "p-1 ml-1 rounded hover:bg-gray-200", 
+                                dashboard.isPinned 
+                                  ? "text-netcore-blue opacity-100" 
+                                  : "text-gray-400 opacity-0 group-hover:opacity-100"
+                              )}
+                           >
+                             <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
+                           </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{dashboard.isPinned ? 'Unpin' : 'Pin'} dashboard</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider> 
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                           <button
+                              onClick={(e) => handleDeleteClick(e, dashboard)}
+                              className={cn(
+                                "p-1 ml-1 rounded hover:bg-gray-200", 
+                                "text-gray-400 opacity-0 group-hover:opacity-100"
+                              )}
+                           >
+                             <Trash2 className="h-4 w-4" />
+                           </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>Delete dashboard</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </li>
               ))
             ) : (
-              <li className="px-2 py-2 text-sm text-muted-foreground">
-                No dashboards found
+              <li className="px-3 py-2 text-sm text-muted-foreground">
+                {searchQuery ? 'No matches found' : 'No custom dashboards'}
               </li>
             )}
           </ul>
         </div>
-        
-        <div className="py-2 border-t mt-2">
-          <h2 className="mb-2 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+
+        <hr className="mx-4 my-3 border-gray-200" />
+
+        <div className="px-4 space-y-2 pb-2"> 
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Insight Generator
           </h2>
           <ul>
@@ -227,19 +244,29 @@ const Sidebar: React.FC = () => {
               <button
                 onClick={handleInsightGeneratorClick}
                 className={cn(
-                  "w-full text-left px-2 py-2 text-sm rounded-md mb-1 flex items-center",
+                  "w-full text-left px-3 py-2.5 text-sm rounded-md flex items-center gap-3", 
                   currentView === 'insightGenerator'
-                    ? "bg-netcore-blue text-white"
-                    : "hover:bg-muted"
+                    ? "bg-blue-100 text-netcore-blue font-medium"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 )}
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
+                <MessageSquare className={cn("h-5 w-5", currentView === 'insightGenerator' ? "text-netcore-blue" : "text-gray-500")} /> 
                 Ask AI for Insights
               </button>
             </li>
           </ul>
         </div>
-      </nav>
+      </div> 
+
+      <div className="p-2 border-t mt-auto border-gray-200"> 
+        <button 
+          onClick={handleMinimizeClick}
+          className="w-full flex items-center justify-center px-3 py-2.5 text-sm text-netcore-blue font-medium hover:bg-blue-50 rounded-md"
+        >
+          <ChevronLeft className="h-4 w-4 mr-2" />
+          MINIMIZE THIS
+        </button>
+      </div>
 
       {dashboardToDelete && (
         <DeleteDashboardModal
@@ -249,11 +276,6 @@ const Sidebar: React.FC = () => {
           onConfirm={handleDeleteConfirm}
         />
       )}
-
-      <CreateDashboardModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-      />
     </aside>
   );
 };

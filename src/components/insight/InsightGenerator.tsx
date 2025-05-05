@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { Chart } from '@/types/dashboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
-import SaveChartModal from '@/components/dashboard/SaveChartModal';
 import { useToast } from '@/hooks/use-toast';
 
 // Predefined suggestion chips
@@ -26,9 +24,8 @@ interface Message {
 const InsightGenerator: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [saveModalOpen, setSaveModalOpen] = useState(false);
-  const [chartToSave, setChartToSave] = useState<Chart | null>(null);
   const { toast } = useToast();
+  const { saveChart } = useDashboard();
 
   const handleSendMessage = (content: string) => {
     // Add user message
@@ -70,8 +67,11 @@ const InsightGenerator: React.FC = () => {
   };
 
   const handleSaveChart = (chart: Chart) => {
-    setChartToSave(chart);
-    setSaveModalOpen(true);
+    console.log("Attempting to save chart:", chart);
+    toast({
+      title: "Save Chart Clicked",
+      description: "Saving functionality for AI-generated charts needs implementation.",
+    });
   };
 
   return (
@@ -169,15 +169,6 @@ const InsightGenerator: React.FC = () => {
           <Send className="h-4 w-4" />
         </Button>
       </div>
-      
-      {chartToSave && (
-        <SaveChartModal
-          chart={chartToSave}
-          open={saveModalOpen}
-          onOpenChange={setSaveModalOpen}
-          chartType="chart"
-        />
-      )}
     </div>
   );
 };
