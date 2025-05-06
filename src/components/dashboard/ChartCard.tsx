@@ -244,7 +244,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                 onClick={handleDelete}
               >
                 <Trash2 className="h-4 w-4 text-[#F05C5C]" />
-                <span className="flex-1">Delete</span>
+                <span className="flex-1">Remove from dashboard</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

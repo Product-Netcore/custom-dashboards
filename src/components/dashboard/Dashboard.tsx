@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
   console.log('Is system dashboard:', isSystemDashboard);
 
   return (
-    <div className="flex-1 bg-netcore-dashboard-bg">
+    <div className="flex-1 bg-netcore-bg">
       <div className="p-6 h-full flex flex-col">
         <CustomDashboardHeader
           dashboard={currentDashboard}
@@ -175,13 +175,13 @@ const Dashboard: React.FC = () => {
                       chart={chart} 
                       dashboardId={currentDashboard.id} 
                     />
-            ))}
-          </div>
+                  ))}
+                </div>
               </SortableContext>
             </DndContext>
-        ) : (
+          ) : (
             <EmptyDashboard onAddAnalysis={handleAddAnalysis} />
-        )}
+          )}
         </div>
       </div>
       <AddAnalysisModal 
