@@ -17,13 +17,13 @@ interface NavItem {
 
 const Sidebar: React.FC = () => {
   const { 
-    systemDashboards,
-    filteredDashboards,
+    systemDashboards, 
+    filteredDashboards, 
     currentDashboard,
     currentView,
     setCurrentDashboard, 
     setCurrentView,
-    searchQuery,
+    searchQuery, 
     setSearchQuery,
     togglePinDashboard,
     deleteDashboard,
@@ -141,7 +141,7 @@ const Sidebar: React.FC = () => {
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
+                  <Button
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 text-netcore-blue hover:bg-blue-100"
@@ -157,12 +157,12 @@ const Sidebar: React.FC = () => {
             </TooltipProvider>
           </div>
 
-          <div className="relative"> 
+                  <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search dashboards..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+                    <Input
+                      placeholder="Search dashboards..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9 text-sm rounded-md border-gray-300 focus:border-netcore-blue focus:ring-netcore-blue"
             />
           </div>
@@ -183,27 +183,27 @@ const Sidebar: React.FC = () => {
                       title={dashboard.name} 
                     >
                       {dashboard.name}
-                    </button>
-                    <TooltipProvider> 
+                              </button>
+                        <TooltipProvider>
                       <Tooltip delayDuration={200}>
-                        <TooltipTrigger asChild>
-                           <button
-                              onClick={(e) => handlePinClick(e, dashboard.id)}
-                              className={cn(
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => handlePinClick(e, dashboard.id)}
+                                className={cn(
                                 "p-1 ml-1 rounded hover:bg-gray-200", 
                                 dashboard.isPinned 
                                   ? "text-netcore-blue opacity-100" 
                                   : "text-gray-400 opacity-0 group-hover:opacity-100"
-                              )}
-                           >
-                             <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
-                           </button>
-                        </TooltipTrigger>
+                                )}
+                              >
+                                <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
+                              </button>
+                            </TooltipTrigger>
                         <TooltipContent side="right">
                           <p>{dashboard.isPinned ? 'Unpin' : 'Pin'} dashboard</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                     <TooltipProvider> 
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
@@ -215,7 +215,7 @@ const Sidebar: React.FC = () => {
                               )}
                            >
                              <Trash2 className="h-4 w-4" />
-                           </button>
+                    </button>
                         </TooltipTrigger>
                         <TooltipContent side="right">
                           <p>Delete dashboard</p>
@@ -232,7 +232,7 @@ const Sidebar: React.FC = () => {
             )}
           </ul>
         </div>
-
+        
         <hr className="mx-4 my-3 border-gray-200" />
 
         <div className="px-4 space-y-2 pb-2"> 

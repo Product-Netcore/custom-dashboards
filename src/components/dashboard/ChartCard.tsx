@@ -263,7 +263,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
 
       <div className="flex flex-row justify-between items-center p-4 gap-2.5 bg-white w-full">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild className="opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#6F6F8D] hover:no-underline">
               <span>Download</span>
               <DownloadIcon size={18} />

@@ -21,17 +21,17 @@ const App = () => {
         <div className="flex flex-col min-h-screen">
           <Header />
           <BrowserRouter>
-            <div className="flex flex-1 pt-16"> 
-              <L1Panel />
-              <main className="flex-1 pl-16 bg-netcore-content-bg"> 
-                {/* Main content area where routes are rendered */}
+          <div className="flex flex-1 pt-16"> 
+            <L1Panel />
+            <main className="flex-1 pl-16 bg-netcore-content-bg"> 
+              {/* Main content area where routes are rendered */}
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/create-funnel" element={<CreateFunnelPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
-              </main>
-            </div>
+            </main>
+          </div>
           </BrowserRouter>
         </div>
       </TooltipProvider>

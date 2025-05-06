@@ -172,9 +172,9 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   ) => {
     const updater = (dashboards: Dashboard[]) =>
       dashboards.map(dashboard =>
-        dashboard.id === dashboardId
+          dashboard.id === dashboardId 
           ? { ...dashboard, charts: updateFn(dashboard.charts), updatedAt: new Date() }
-          : dashboard
+            : dashboard
       );
 
     // Check if it's a system or custom dashboard based on prefix/existence

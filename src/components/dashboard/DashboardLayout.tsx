@@ -8,10 +8,10 @@ const DashboardLayout: React.FC = () => {
     <DashboardProvider>
       <div className="flex flex-1 h-[calc(100vh-4rem)]">
         <div className="sticky top-0 h-full overflow-y-auto">
-          <Sidebar />
+        <Sidebar />
         </div>
         <main className="flex-1 overflow-y-auto bg-netcore-dashboard-bg">
-          <Dashboard />
+        <Dashboard />
         </main>
       </div>
     </DashboardProvider>

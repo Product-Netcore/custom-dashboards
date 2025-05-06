@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Bell, Save } from 'lucide-react';
@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Dashboard, ChartType } from '@/types/dashboard';
+import SubscribeModal from './SubscribeModal';
 
 interface CustomDashboardHeaderProps {
   dashboard: Dashboard;
@@ -39,8 +40,18 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
   hasCharts,
 }) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+
+  const handleSubscribeClick = () => {
+    setIsSubscribeModalOpen(true);
+  };
+
+  const handleCloseSubscribeModal = () => {
+    setIsSubscribeModalOpen(false);
+  };
 
   return (
+    <>
     <div className="flex items-center justify-between mb-6">
       <div>
         {isEditingTitle ? (
@@ -60,7 +71,7 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <h1 
-                  className="text-2xl font-bold cursor-pointer hover:text-netcore-blue transition-colors"
+                  className="text-2xl font-bold cursor-pointer hover:text-netcore-blue transition-colors mb-1"
                   onClick={isSystemDashboard ? undefined : onEditTitle}
                 >
                   {dashboard.name}
@@ -75,7 +86,7 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
         <p className="text-sm text-muted-foreground">
           {isSystemDashboard 
             ? "System dashboard with analysis examples" 
-            : `Last updated: ${dashboard.updatedAt.toLocaleDateString()}`}
+            : `Last updated: ${dashboard.updatedAt.toLocaleString()}`}
         </p>
       </div>
       
@@ -87,7 +98,7 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button 
-                      className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-netcore-save-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
+                      className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-cobalt-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
                     >
                       Save
                     </Button>
@@ -118,9 +129,9 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
               <TooltipTrigger asChild>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Analysis
+                    <Button className="flex flex-row items-center justify-center h-8 px-[14px] py-[6px] gap-[6px] bg-cobalt-blue text-white rounded-[4px] text-sm font-semibold uppercase tracking-wider hover:bg-blue-800">
+                      <Plus className="h-[14px] w-[14px]" />
+                      <span>Add Analysis</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -151,19 +162,24 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" onClick={onSubscribe}>
-                  <Bell className="mr-2 h-4 w-4" />
-                  Subscribe
+                <Button variant="outline" size="icon" onClick={handleSubscribeClick} className="h-8 w-8">
+                  <Bell className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Get email snapshots of this dashboard based on your preferred schedule.</p>
+                <p>Subscribe to this dashboard</p> 
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
       )}
     </div>
+    <SubscribeModal 
+      isOpen={isSubscribeModalOpen} 
+      onClose={handleCloseSubscribeModal} 
+      dashboardName={dashboard.name}
+    />
+    </>
   );
 };
 
