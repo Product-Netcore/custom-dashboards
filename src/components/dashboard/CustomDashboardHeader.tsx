@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Bell, Save } from 'lucide-react';
+import { Plus, Bell, Save, Edit2 } from 'lucide-react';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
@@ -41,6 +41,7 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
 }) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [isSubscribeModalOpen, setIsSubscribeModalOpen] = useState(false);
+  const [displayRelativeTime, setDisplayRelativeTime] = useState(true);
 
   const handleSubscribeClick = () => {
     setIsSubscribeModalOpen(true);
@@ -48,6 +49,33 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
 
   const handleCloseSubscribeModal = () => {
     setIsSubscribeModalOpen(false);
+  };
+
+  const formatRelativeTime = (date: Date): string => {
+    const now = new Date();
+    const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
+    const minutes = Math.round(seconds / 60);
+    const hours = Math.round(minutes / 60);
+    const days = Math.round(hours / 24);
+
+    if (seconds < 60) return `${seconds} second${seconds === 1 ? '' : 's'} ago`;
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    return `${days} day${days === 1 ? '' : 's'} ago`;
+  };
+
+  const toggleTimeFormat = () => {
+    setDisplayRelativeTime(!displayRelativeTime);
+  };
+
+  const absoluteDateTimeFormat: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
   };
 
   return (
@@ -67,27 +95,56 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
             />
           </div>
         ) : (
-          <TooltipProvider>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <h1 
+                    className="text-2xl font-bold cursor-pointer hover:text-netcore-blue transition-colors mb-1"
+                    onClick={isSystemDashboard ? undefined : onEditTitle}
+                  >
+                    {dashboard.name}
+                  </h1>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isSystemDashboard ? "System dashboards cannot be renamed" : "Click to rename your dashboard."}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            {!isSystemDashboard && (
+              <Edit2 
+                className="h-5 w-5 text-gray-500 hover:text-netcore-blue cursor-pointer mb-1" 
+                onClick={onEditTitle} 
+              />
+            )}
+          </div>
+        )}
+        {!isSystemDashboard && (
+          <TooltipProvider delayDuration={150}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h1 
-                  className="text-2xl font-bold cursor-pointer hover:text-netcore-blue transition-colors mb-1"
-                  onClick={isSystemDashboard ? undefined : onEditTitle}
+                <p 
+                  className="text-sm text-muted-foreground cursor-pointer hover:text-netcore-blue transition-colors"
+                  onClick={toggleTimeFormat}
                 >
-                  {dashboard.name}
-                </h1>
+                  Last refreshed: {
+                    displayRelativeTime 
+                      ? formatRelativeTime(dashboard.updatedAt) 
+                      : dashboard.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
+                  }
+                </p>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isSystemDashboard ? "System dashboards cannot be renamed" : "Click to rename your dashboard."}</p>
+                <p>{dashboard.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         )}
-        <p className="text-sm text-muted-foreground">
-          {isSystemDashboard 
-            ? "System dashboard with analysis examples" 
-            : `Last updated: ${dashboard.updatedAt.toLocaleString()}`}
-        </p>
+         {isSystemDashboard && (
+            <p className="text-sm text-muted-foreground">
+                System dashboard with analysis examples
+            </p>
+        )}
       </div>
       
       {isSystemDashboard ? (
