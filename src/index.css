@@ -99,3 +99,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hide default arrow in DropdownMenuSubTrigger */
+[data-radix-collection-item] > .lucide-chevron-right {
+  display: none !important;
+}

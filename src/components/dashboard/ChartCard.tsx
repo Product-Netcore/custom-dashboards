@@ -9,7 +9,10 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger, 
-  DropdownMenuSeparator 
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { MoreVertical, GripVertical, Download as DownloadIcon, ArrowRight, RefreshCw, Expand, Minimize, ChevronDown, Trash2, Edit2, Copy, PlusSquare, FileImage, FileType } from 'lucide-react';
@@ -152,11 +155,12 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   // --- End time formatting ---
 
   // Base classes for menu items
-  const menuItemBaseClass = "flex items-center justify-between w-full h-[50px] px-4 py-3.5 text-sm font-semibold tracking-[0.42px] cursor-pointer focus:outline-none rounded-none relative";
+  const menuItemBaseClass = "flex items-center justify-between w-full h-[50px] px-4 py-3.5 text-sm font-semibold tracking-[0.42px] cursor-pointer focus:outline-none rounded-none relative text-[#6F6F8D]";
   // Hover state with left border: focus:bg-menu-item-hover-bg focus:border-l-4 focus:border-cobalt-blue focus:pl-3 (adjust pl-3 if needed, or use pseudo-element)
   // For simplicity, we will use focus:pl-3 for the border effect space.
-  const menuItemHoverClass = "focus:bg-menu-item-hover-bg focus:text-netcore-chart-dropdown-text focus:border-l-[3px] focus:border-cobalt-blue focus:pl-[13px]"; // pl is 16px(px-4) - 3px border = 13px
+  const menuItemHoverClass = "hover:text-[#17173A] focus:text-[#17173A] focus:bg-menu-item-hover-bg focus:border-l-[3px] focus:border-cobalt-blue focus:pl-[13px]"; // pl is 16px(px-4) - 3px border = 13px
   const iconClass = "h-[18px] w-[18px]";
+  const subMenuItemClass = "flex items-center justify-between w-full h-auto px-3 py-2 text-sm font-semibold tracking-[0.42px] cursor-pointer focus:outline-none rounded-none relative text-[#6F6F8D]"; // Adjusted for sub-menu
 
   return (
     <>
@@ -249,100 +253,148 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                    <ChevronDown size={16} className="text-[#6F6F8D] flex-shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-auto min-w-[174px]">
-                <DropdownMenuItem disabled className="truncate">Chart</DropdownMenuItem>
-                <DropdownMenuItem disabled className="truncate">KPI</DropdownMenuItem>
-                <DropdownMenuItem disabled className="truncate">Chart + KPI</DropdownMenuItem>
-                <DropdownMenuItem disabled className="truncate">Table view</DropdownMenuItem>
-                <DropdownMenuItem disabled className="truncate">Transposed table view</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-[174px] bg-white border-menu-item-border shadow-lg rounded-md p-0">
+                {['Chart', 'Table', 'Chart_Table'].map((mode) => (
+                  <DropdownMenuItem
+                    key={mode}
+                    className={cn(
+                        menuItemBaseClass, 
+                        menuItemHoverClass,
+                        "h-auto py-2.5" // Adjusted padding for these specific items
+                    )}
+                    onClick={() => console.log(`Switch to ${mode}`)} // Replace with actual handler
+                  >
+                    {mode.replace('_', ' + ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-[#6F6F8D] hover:bg-gray-100 rounded">
-                  <MoreVertical size={18} /><span className="sr-only">Chart options</span>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={cn(
+                    "h-8 w-8 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+                    "transition-opacity duration-150 ease-in-out"
+                  )}
+                  aria-label="Chart options"
+                >
+                  <MoreVertical size={18} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
-                className="w-[280px] bg-white rounded-[4px] border border-menu-item-border shadow-[0px_5px_12px_rgba(23,23,58,0.07)] py-0 font-sans"
+                className="w-[274px] bg-white border-menu-item-border shadow-lg rounded-md p-0"
               >
-                <DropdownMenuItem onClick={handleToggleWidth} className={cn(menuItemBaseClass, menuItemHoverClass, "text-netcore-chart-dropdown-text")}>
-                  <span>{chart.isFullWidth ? 'Collapse' : 'Expand'}</span>{chart.isFullWidth ? <Minimize className={cn(iconClass, "text-netcore-chart-dropdown-text")} /> : <Expand className={cn(iconClass, "text-netcore-chart-dropdown-text")} />}
+                <DropdownMenuItem 
+                  className={cn(menuItemBaseClass, menuItemHoverClass)}
+                  onClick={handleToggleWidth}
+                >
+                  <span>{chart.isFullWidth ? "Minimize" : "Expand"}</span> 
+                  {chart.isFullWidth ? <Minimize className={iconClass} /> : <Expand className={iconClass} />}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDuplicateChart} className={cn(menuItemBaseClass, menuItemHoverClass, "text-netcore-chart-dropdown-text")}>
-                  <span>Duplicate</span><Copy className={cn(iconClass, "text-netcore-chart-dropdown-text")} />
+                <DropdownMenuItem 
+                  className={cn(menuItemBaseClass, menuItemHoverClass)}
+                  onClick={handleDuplicateChart}
+                >
+                  <span>Duplicate</span>
+                  <Copy className={iconClass} />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownload('png')} className={cn(menuItemBaseClass, menuItemHoverClass, "text-netcore-chart-dropdown-text")}>
-                  <span>Download as PNG</span><FileImage className={cn(iconClass, "text-netcore-chart-dropdown-text")} />
+                
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className={cn(menuItemBaseClass, menuItemHoverClass)}>
+                    <span>Download</span>
+                    <DownloadIcon className={iconClass} />
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-[220px] bg-white border-menu-item-border shadow-lg rounded-md p-0">
+                    <DropdownMenuItem 
+                      className={cn(subMenuItemClass, menuItemHoverClass)}
+                      onClick={() => handleDownload('png')}
+                    >
+                      <span>Download as PNG</span>
+                      <FileImage className={iconClass} />
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className={cn(subMenuItemClass, menuItemHoverClass)}
+                      onClick={() => handleDownload('csv')}
+                    >
+                      <span>Download as CSV</span>
+                      <FileType className={iconClass} />
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
+                <DropdownMenuItem 
+                  className={cn(menuItemBaseClass, menuItemHoverClass)}
+                  onClick={handleAddToAnotherDashboard}
+                >
+                  <span>Add to dashboard</span>
+                  <PlusSquare className={iconClass} />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleDownload('csv')} className={cn(menuItemBaseClass, menuItemHoverClass, "text-netcore-chart-dropdown-text")}>
-                  <span>Download as CSV</span><FileType className={cn(iconClass, "text-netcore-chart-dropdown-text")} />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleAddToAnotherDashboard} className={cn(menuItemBaseClass, menuItemHoverClass, "text-netcore-chart-dropdown-text")}>
-                  <span>Add to another dashboard</span><PlusSquare className={cn(iconClass, "text-netcore-chart-dropdown-text")} />
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className={cn(menuItemBaseClass, menuItemHoverClass, "text-[#F05C5C] focus:text-[#F05C5C]")}>
-                  <span>Remove from dashboard</span><Trash2 className={cn(iconClass, "text-[#F05C5C]")} />
+                <DropdownMenuSeparator className="bg-menu-item-border my-0" />
+                <DropdownMenuItem 
+                  className={cn(menuItemBaseClass, menuItemHoverClass, "text-red-600 focus:text-red-700 focus:bg-red-50 focus:border-red-600")}
+                  onClick={handleDelete}
+                >
+                  <span>Remove from dashboard</span>
+                  <Trash2 className={iconClass} />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
 
-        {!chart.isBodyHidden && <hr className="border-t border-menu-item-border w-full" />}
+        <div 
+          className={cn(
+            "p-4 border-t border-gray-200",
+            chart.displayMode === 'table' && "min-h-[300px]" // Ensure table view has enough height
+          )}
+        >
+          <PlaceholderChart type={chart.type} data={chart.data} />
+        </div>
 
-        {!chart.isBodyHidden && (
-          <div className="flex-1 w-full bg-white">
-            <PlaceholderChart type={chart.type} data={chart.data} />
-          </div>
-        )}
-
-        <hr className="border-t border-menu-item-border w-full" />
-
-        <div className="flex flex-row justify-between items-center p-4 gap-2.5 bg-white w-full h-[56px]"> {/* Ensure consistent footer height */}
-          {/* Last Refreshed section - visible on hover */}
-          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-            <TooltipProvider delayDuration={150}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <p 
-                    className="text-sm text-[#6F6F8D] cursor-pointer hover:text-netcore-blue transition-colors"
-                    onClick={toggleChartTimeFormat}
-                  >
-                    Last refreshed: {
-                      displayChartRelativeTime 
-                        ? formatRelativeTime(chart.updatedAt) 
-                        : chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
-                    }
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Button variant="ghost" size="icon" className="h-7 w-7 text-[#6F6F8D] hover:bg-gray-100" onClick={handleChartRefresh}>
-              <RefreshCw size={16} />
-              <span className="sr-only">Refresh chart</span>
+        {/* Footer with more details */}
+        <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-white">
+            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <p 
+                              className="text-xs text-gray-400 cursor-pointer hover:text-netcore-blue"
+                              onClick={toggleChartTimeFormat}
+                          >
+                              Last updated: {
+                                  displayChartRelativeTime 
+                                  ? formatRelativeTime(chart.updatedAt) 
+                                  : chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
+                              }
+                          </p>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                          <p>{chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')}</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </TooltipProvider>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 hover:bg-gray-100" onClick={handleChartRefresh}>
+                <RefreshCw size={16} />
+                <span className="sr-only">Refresh chart</span>
+              </Button>
+            </div>
+            <Button variant="link" size="sm" className="text-xs text-netcore-blue hover:text-blue-700 p-0 h-auto" onClick={handleViewAnalysis}>
+                View analysis <ArrowRight size={12} className="ml-1" />
             </Button>
-          </div>
-
-          <Button variant="link" className="flex items-center gap-2 p-0 h-auto font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#143F93] hover:no-underline hover:text-blue-700" onClick={handleViewAnalysis}>
-            <span>View analysis</span>
-            <ArrowRight size={18} />
-          </Button>
         </div>
       </div>
-
-      {/* Render the modal */}
-      <AddToAnotherDashboardModal 
-        isOpen={isAddToAnotherOpen} 
-        onClose={() => setIsAddToAnotherOpen(false)} 
-        chartToAdd={chart} 
-        currentDashboardId={dashboardId} 
-      />
+      {isAddToAnotherOpen && (
+          <AddToAnotherDashboardModal
+            isOpen={isAddToAnotherOpen}
+            onClose={() => setIsAddToAnotherOpen(false)}
+            chartToAdd={chart}
+            currentDashboardId={dashboardId}
+          />
+      )}
     </>
   );
 };
