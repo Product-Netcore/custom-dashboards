@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { systemDashboards, customDashboards as initialCustomDashboards } from '@/data/mockDashboards';
 import { Dashboard, Chart, ChartType, SaveChartOptions } from '@/types/dashboard';
 import { mockFunnelTemplates } from '@/data/mockFunnels';
+import { useToast } from "@/hooks/use-toast";
 
 export type ViewType = 'dashboard' | 'insightGenerator';
 
 interface DashboardContextProps {
+  dashboards: Dashboard[];
   systemDashboards: Dashboard[];
   customDashboards: Dashboard[];
   filteredDashboards: Dashboard[];
@@ -25,6 +27,9 @@ interface DashboardContextProps {
   addChartFromTemplate: (dashboardId: string, chartName: string, templateId: string, analysisType: ChartType) => void;
   reorderCharts: (dashboardId: string, startIndex: number, endIndex: number) => void;
   renameChart: (dashboardId: string, chartId: string, newTitle: string) => void;
+  duplicateChart: (dashboardId: string, chartId: string) => void;
+  addChartToExistingDashboard: (targetDashboardId: string, chartToCopy: Chart) => void;
+  createDashboardWithChart: (newDashboardName: string | undefined, chartToCopy: Chart) => void;
 }
 
 const DashboardContext = createContext<DashboardContextProps | undefined>(undefined);
@@ -69,6 +74,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   });
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { toast } = useToast();
 
   // Save custom dashboards to localStorage whenever they change
   useEffect(() => {
@@ -316,9 +323,119 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
+  const duplicateChart = (dashboardId: string, chartId: string) => {
+    setCustomDashboards(prev => {
+      const newDashboards = prev.map(dashboard => {
+        if (dashboard.id === dashboardId) {
+          const chartIndex = dashboard.charts.findIndex(c => c.id === chartId);
+          if (chartIndex === -1) return dashboard; // Chart not found
+
+          const originalChart = dashboard.charts[chartIndex];
+          const newId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+          const now = new Date();
+
+          const duplicatedChart: Chart = {
+            ...JSON.parse(JSON.stringify(originalChart)), // Deep copy
+            id: newId,
+            title: `Copy of ${originalChart.title}`,
+            createdAt: now,
+            updatedAt: now,
+          };
+
+          const newCharts = [...dashboard.charts];
+          newCharts.splice(chartIndex + 1, 0, duplicatedChart); // Insert after original
+          return { ...dashboard, charts: newCharts, updatedAt: now };
+        }
+        return dashboard;
+      });
+      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
+      // Update currentDashboard if the change happened there
+      const updatedCurrentDashboard = newDashboards.find(d => d.id === currentDashboard?.id);
+      if (updatedCurrentDashboard) {
+        setCurrentDashboard(parseDashboardDates(updatedCurrentDashboard));
+      }
+      return newDashboards.map(parseDashboardDates);
+    });
+    toast({ title: "Chart duplicated", description: "A copy of the chart has been added to this dashboard." });
+  };
+
+  const addChartToExistingDashboard = (targetDashboardId: string, chartToCopy: Chart) => {
+    setCustomDashboards(prev => {
+      const newDashboards = prev.map(dashboard => {
+        if (dashboard.id === targetDashboardId) {
+          const newId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+          const now = new Date();
+          const copiedChart: Chart = {
+            ...JSON.parse(JSON.stringify(chartToCopy)), // Deep copy
+            id: newId,
+            createdAt: now,
+            updatedAt: now,
+          };
+          return { ...dashboard, charts: [...dashboard.charts, copiedChart], updatedAt: now };
+        }
+        return dashboard;
+      });
+      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
+      // Note: We don't necessarily switch view here
+      return newDashboards.map(parseDashboardDates);
+    });
+  };
+
+  const createDashboardWithChart = (newDashboardName: string | undefined, chartToCopy: Chart) => {
+    let name = newDashboardName?.trim();
+    if (!name) {
+      // Find the highest existing number for default naming
+      let maxNum = 0;
+      customDashboardsState.forEach(d => {
+        if (d.name.startsWith("Custom dashboard ")) {
+          const num = parseInt(d.name.substring("Custom dashboard ".length), 10);
+          if (!isNaN(num) && num > maxNum) {
+            maxNum = num;
+          }
+        }
+      });
+      name = `Custom dashboard ${maxNum + 1}`; 
+    }
+
+    const newDashboardId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9); 
+    const now = new Date();
+
+    const newChartId = Date.now().toString(36) + Math.random().toString(36).substring(2, 10); // Slightly different random part
+    const copiedChart: Chart = {
+      ...JSON.parse(JSON.stringify(chartToCopy)), // Deep copy
+      id: newChartId,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const newDashboard: Dashboard = {
+      id: newDashboardId,
+      name: name,
+      type: 'custom',
+      charts: [copiedChart],
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setCustomDashboards(prev => {
+      const newDashboards = [...prev, newDashboard];
+      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
+       // Optionally switch to the new dashboard
+      // setCurrentDashboard(parseDashboardDates(newDashboard));
+      // setCurrentView('dashboard');
+      // setLastViewedDashboardId(newDashboardId); 
+      return newDashboards.map(parseDashboardDates);
+    });
+    toast({ title: "Dashboard Created", description: `Dashboard "${name}" created with chart "${chartToCopy.title}".` });
+  };
+
+  // Combine system and custom dashboards for consumers that need the full list
+  const allDashboards = [...systemDashboardsState, ...customDashboardsState];
+
   return (
     <DashboardContext.Provider
       value={{
+        dashboards: allDashboards, // Export combined list
         systemDashboards: systemDashboardsState,
         customDashboards: customDashboardsState,
         filteredDashboards,
@@ -337,7 +454,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         toggleChartWidth,
         addChartFromTemplate,
         reorderCharts,
-        renameChart
+        renameChart,
+        duplicateChart,
+        addChartToExistingDashboard,
+        createDashboardWithChart
       }}
     >
       {children}

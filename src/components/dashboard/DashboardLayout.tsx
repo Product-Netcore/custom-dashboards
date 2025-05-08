@@ -6,11 +6,11 @@ import Dashboard from './Dashboard';
 const DashboardLayout: React.FC = () => {
   return (
     <DashboardProvider>
-      <div className="flex flex-1 h-[calc(100vh-4rem)]">
+      <div className="flex flex-1 h-full">
         <div className="sticky top-0 h-full overflow-y-auto">
         <Sidebar />
         </div>
-        <main className="flex-1 overflow-y-auto bg-netcore-dashboard-bg">
+        <main className="flex-1 h-full overflow-hidden">
         <Dashboard />
         </main>
       </div>

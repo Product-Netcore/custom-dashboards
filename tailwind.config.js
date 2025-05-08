@@ -79,6 +79,9 @@ module.exports = {
         'cobalt-blue': '#143F93', // Added Cobalt Blue
         'profile-yellow': '#FDBA74', // Added for L1 Profile button (amber-400)
         'accent-orange': '#F97316', // Added for L1 top border (orange-500)
+        'menu-item-hover-bg': '#F4F8FF', // For kebab menu item hover background
+        'menu-item-border': '#DDE2EE', // For kebab menu border
+        'charcoal': '#17173A', // For modal title
       },
     },
   },

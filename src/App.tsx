@@ -23,7 +23,7 @@ const App = () => {
           <BrowserRouter>
           <div className="flex flex-1 pt-16"> 
             <L1Panel />
-            <main className="flex-1 pl-16 bg-netcore-content-bg"> 
+            <main className="flex-1 pl-16 h-[calc(100vh-4rem)] overflow-y-auto bg-transparent"> 
               {/* Main content area where routes are rendered */}
                 <Routes>
                   <Route path="/" element={<Index />} />

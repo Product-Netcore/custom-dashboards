@@ -135,8 +135,8 @@ const Dashboard: React.FC = () => {
   console.log('Is system dashboard:', isSystemDashboard);
 
   return (
-    <div className="flex-1 bg-netcore-bg">
-      <div className="p-6 h-full flex flex-col">
+    <div className="flex-1 h-full overflow-y-auto bg-netcore-bg p-6">
+      <div className="flex flex-col min-h-full">
         <CustomDashboardHeader
           dashboard={currentDashboard}
           isEditingTitle={isEditingTitle}
@@ -157,7 +157,7 @@ const Dashboard: React.FC = () => {
           dashboardName={currentDashboard?.name || ''}
         />
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1">
           {hasCharts ? (
             <DndContext 
               sensors={sensors}

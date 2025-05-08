@@ -148,37 +148,39 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
       </div>
       
       {isSystemDashboard ? (
-        <div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-cobalt-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
-                    >
-                      Save
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="rounded-md border shadow-md">
-                    <DropdownMenuItem onClick={() => onAddAnalysis('funnel')}>
-                      Save chart to dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onAddAnalysis('behavior')}>
-                      Save table to dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onAddAnalysis('rfm')}>
-                      Save to My Studio
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Save this chart or table to a custom dashboard</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        dashboard.id !== 'system-home' && (
+          <div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-cobalt-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
+                      >
+                        Save
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="rounded-md border shadow-md">
+                      <DropdownMenuItem onClick={() => onAddAnalysis('funnel')}>
+                        Save chart to dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onAddAnalysis('behavior')}>
+                        Save table to dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onAddAnalysis('rfm')}>
+                        Save to My Studio
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save this chart or table to a custom dashboard</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )
       ) : (
         <div className="flex space-x-2">
           <TooltipProvider>
