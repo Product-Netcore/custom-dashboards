@@ -87,9 +87,9 @@ const Dashboard: React.FC = () => {
 
   const handleAddAnalysis = (type?: ChartType) => {
     if (!type) {
-      console.warn("handleAddAnalysis called without a type.");
-      toast({ title: "Info", description: "Please select a specific analysis type.", variant: "default" });
-      return; 
+      setSelectedAnalysisType(null);
+      setAddAnalysisModalOpen(true);
+      return;
     }
     setSelectedAnalysisType(type);
     setAddAnalysisModalOpen(true);

@@ -208,8 +208,8 @@ const EmptyDashboard: React.FC<EmptyDashboardProps> = ({ onAddAnalysis }) => {
             <Play size={18} className="text-[#0A8FFD]" />
             Learn how to add analysis
           </a>
-        </div>
-        
+      </div>
+
         <div className="flex justify-center">
           <Button 
             onClick={() => onAddAnalysis('funnel')} 

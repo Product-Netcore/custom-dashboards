@@ -188,34 +188,15 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button className="flex flex-row items-center justify-center h-8 px-[14px] py-[6px] gap-[6px] bg-cobalt-blue text-white rounded-[4px] text-sm font-semibold uppercase tracking-wider hover:bg-blue-800">
-                          <Plus className="h-[14px] w-[14px]" />
-                          <span>Add Analysis</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => onAddAnalysis('funnel')}>
-                          Funnel Analysis
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onAddAnalysis('rfm')}>
-                          RFM Analysis
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onAddAnalysis('cohort')}>
-                          Cohort Analysis
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onAddAnalysis('userPath')}>
-                          User Path Analysis
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onAddAnalysis('behavior')}>
-                          Behavior Analysis
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button 
+                      className="flex flex-row items-center justify-center h-8 px-[14px] py-[6px] gap-[6px] bg-cobalt-blue text-white rounded-[4px] text-sm font-semibold uppercase tracking-wider hover:bg-blue-800"
+                      onClick={() => onAddAnalysis()}
+                    >
+                      <span>Add Analysis</span>
+                    </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Add charts from Funnel, RFM, Cohort, User Path, or Behavior dashboards.</p>
+                    <p>Add a new analysis to your dashboard.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
