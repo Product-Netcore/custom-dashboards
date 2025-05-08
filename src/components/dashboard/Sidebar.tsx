@@ -109,7 +109,7 @@ const Sidebar: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-800">Dashboards</h1>
       </div>
       
-      <div className="flex-1 flex flex-col min-h-0"> 
+      <div className="flex-1 flex flex-col min-h-0 overflow-y-auto overscroll-contain-y"> 
         <nav className="p-2 pt-4"> 
           <ul>
             {navItems.map((item) => (
@@ -133,7 +133,7 @@ const Sidebar: React.FC = () => {
 
         <hr className="mx-4 my-3 border-gray-200" />
 
-        <div className="px-4 pb-2 space-y-3 flex-1 min-h-0"> 
+        <div className="px-4 pb-2 space-y-3"> 
           <div className="flex items-center justify-between"> 
             <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Custom Dashboards
