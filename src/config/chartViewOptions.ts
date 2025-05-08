@@ -3,6 +3,7 @@ import { ChartType } from '@/types/dashboard';
 // Interface for a single view option
 export interface ViewOption {
   label: string; // The text displayed in the dropdown, e.g., "Steps Chart"
+  isTableView?: boolean; // Added to identify table views
   // We can add more properties here later if needed, e.g., 
   // a value to map to a specific rendering function or a sub-type.
   // For now, the label itself can act as the unique identifier for selection.
@@ -12,23 +13,23 @@ export interface ViewOption {
 const analysisSpecificViewOptions: Partial<Record<ChartType, ViewOption[]>> = {
   funnel: [
     { label: "Steps Chart" },
-    { label: "Steps Table" },
+    { label: "Steps Table", isTableView: true },
     { label: "Conversion Chart" },
-    { label: "Conversion Table" },
+    { label: "Conversion Table", isTableView: true },
   ],
   rfm: [
-    { label: "Table" },
-    { label: "Transition Table" },
+    { label: "Table", isTableView: true },
+    { label: "Transition Table", isTableView: true },
     { label: "Recency chart" },
     { label: "Frequency chart" },
     { label: "Monetary chart" },
-    { label: "Recency table" },
-    { label: "Frequency table" },
-    { label: "Monetary table" },
+    { label: "Recency table", isTableView: true },
+    { label: "Frequency table", isTableView: true },
+    { label: "Monetary table", isTableView: true },
   ],
   cohort: [
     { label: "Line Chart" },
-    { label: "Tabular View" },
+    { label: "Tabular View", isTableView: true },
   ],
   userPath: [
     { label: "Chart" },
@@ -51,7 +52,7 @@ export const getChartViewOptions = (type: ChartType): ViewOption[] => {
   // Or if the specific options array is empty
   return [
     { label: "Chart" },
-    { label: "Table" },
+    { label: "Table", isTableView: true },
     { label: "Chart + Table" }, // This corresponds to 'chart_kpi' in the old displayMode
   ];
 };

@@ -25,6 +25,7 @@ export interface Chart {
   displayMode: 'chart' | 'kpi' | 'chart_kpi' | 'table' | 'transposed_table'; // Updated display modes
   isFullWidth: boolean;
   isBodyHidden?: boolean; // Renamed from isCollapsed
+  tableDisplayMode?: '#' | '%'; // Added for the new toggle
   data: any; // Keep as any for flexibility with mock data
   createdAt: Date;
   updatedAt: Date;

@@ -113,12 +113,12 @@ const AddAnalysisModal: React.FC<AddAnalysisModalProps> = ({
       
     } else { // createNew
        const analysisTypeForCreation = selectedInternalAnalysisType || 'funnel'; 
-      if (!newAnalysisTitle.trim()) {
-        toast({ title: "Error", description: "Please enter a title for the new analysis.", variant: "destructive" });
-        return;
-      }
-      console.log(`Redirecting to create new ${analysisTypeForCreation} named: ${newAnalysisTitle}`);
-      navigate(`/create-funnel?name=${encodeURIComponent(newAnalysisTitle)}&type=${analysisTypeForCreation}`);
+       const title = newAnalysisTitle.trim() || "Untitled"; // Default to "Untitled" if empty
+
+      console.log(`Redirecting to create new ${analysisTypeForCreation} named: ${title}`);
+      // Ensure dashboardId is available for context, though not directly used in this navigation path for /create-funnel
+      // The new chart will be added to context on the /create-funnel page and then associated with a dashboard.
+      navigate(`/create-funnel?name=${encodeURIComponent(title)}&type=${analysisTypeForCreation}`);
     }
     onOpenChange(false); 
   };

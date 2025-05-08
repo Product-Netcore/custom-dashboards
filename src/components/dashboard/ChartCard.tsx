@@ -63,6 +63,8 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   const [currentViewLabel, setCurrentViewLabel] = useState<string>(
     () => getDefaultViewLabel(chart.type, chart.displayMode)
   );
+  // State for the table display toggle (% or #)
+  const [activeTableToggle, setActiveTableToggle] = useState<'#' | '%'>(chart.tableDisplayMode || '#');
 
   // Update currentViewLabel if chart.type or chart.displayMode changes from props
   useEffect(() => {
@@ -179,9 +181,19 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   // Handler for selecting a new view option
   const handleViewOptionSelect = (option: ViewOption) => {
     setCurrentViewLabel(option.label);
-    // Later, we can add logic here to update chart.displayMode or other properties via context
-    // For example: updateChartDisplayMode(dashboardId, chart.id, option.baseMode, option.subType);
+    // If the new view is not a table view, we could reset the toggle, or hide it.
+    // For now, visibility is handled by isCurrentViewTable.
     console.log(`View selected: ${option.label}`); 
+  };
+
+  // Determine if the currently selected view is a table view
+  const currentSelectedViewOption = viewOptions.find(opt => opt.label === currentViewLabel);
+  const isCurrentViewTable = currentSelectedViewOption?.isTableView === true;
+
+  const handleTableToggle = (mode: '#' | '%') => {
+    setActiveTableToggle(mode);
+    // Later: call context to persist this change: updateChartTableDisplayMode(dashboardId, chart.id, mode);
+    console.log(`Table view toggled to: ${mode}`);
   };
 
   return (
@@ -372,10 +384,26 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
 
         <div 
           className={cn(
-            "p-4 border-t border-gray-200",
-            chart.displayMode === 'table' && "min-h-[300px]" // Ensure table view has enough height
+            "border-t border-gray-200 relative", // Removed p-4
+            chart.displayMode === 'table' && "min-h-[300px]" 
           )}
         >
+          {isCurrentViewTable && (
+            <div className="absolute top-4 right-4 z-10 flex border border-gray-300 rounded">
+              <button 
+                onClick={() => handleTableToggle('%')}
+                className={`px-6 py-2 text-sm ${activeTableToggle === '%' ? 'bg-netcore-blue text-white' : 'bg-white text-gray-700'} rounded-l`}
+              >
+                %
+              </button>
+              <button 
+                onClick={() => handleTableToggle('#')}
+                className={`px-6 py-2 text-sm ${activeTableToggle === '#' ? 'bg-netcore-blue text-white' : 'bg-white text-gray-700'} rounded-r`}
+              >
+                #
+              </button>
+            </div>
+          )}
           <PlaceholderChart type={chart.type} data={chart.data} />
         </div>
 
