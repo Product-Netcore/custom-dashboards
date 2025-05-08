@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
   console.log('Is system dashboard:', isSystemDashboard);
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-netcore-bg p-6">
+    <div className="flex-1 h-full overflow-y-auto bg-netcore-bg p-6 overscroll-contain-y">
       <div className="flex flex-col min-h-full">
         <CustomDashboardHeader
           dashboard={currentDashboard}

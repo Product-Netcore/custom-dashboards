@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; //
 
 const Header: React.FC = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 px-6 bg-netcore-gray border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between h-16 px-6 bg-white border-b border-border">
       <div className="flex items-center space-x-4">
         {/* Placeholder for actual Netcore Logo Component/Image */}
         <span className="text-xl font-bold text-orange-600">Netcore</span> 

@@ -7,7 +7,7 @@ const DashboardLayout: React.FC = () => {
   return (
     <DashboardProvider>
       <div className="flex flex-1 h-full">
-        <div className="sticky top-0 h-full overflow-y-auto">
+        <div className="sticky top-0 h-full overflow-y-auto overscroll-contain-y">
         <Sidebar />
         </div>
         <main className="flex-1 h-full overflow-hidden">

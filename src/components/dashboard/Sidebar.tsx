@@ -109,7 +109,7 @@ const Sidebar: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-800">Dashboards</h1>
       </div>
       
-      <div className="flex-1 overflow-y-auto"> 
+      <div className="flex-1 overflow-y-auto overscroll-contain-y"> 
         <nav className="p-2 pt-4"> 
           <ul>
             {navItems.map((item) => (
@@ -235,7 +235,7 @@ const Sidebar: React.FC = () => {
         
         <hr className="mx-4 my-3 border-gray-200" />
 
-        <div className="px-4 space-y-2 pb-2"> 
+        <div className="px-4 space-y-2 pb-4"> 
           <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Insight Generator
           </h2>
@@ -258,14 +258,15 @@ const Sidebar: React.FC = () => {
         </div>
       </div> 
 
-      <div className="p-2 border-t mt-auto border-gray-200"> 
-        <button 
+      <div className="p-2 border-t border-border mt-auto"> 
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
           onClick={handleMinimizeClick}
-          className="w-full flex items-center justify-center px-3 py-2.5 text-sm text-netcore-blue font-medium hover:bg-blue-50 rounded-md"
         >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          MINIMIZE THIS
-        </button>
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Minimize this
+        </Button>
       </div>
 
       {dashboardToDelete && (
