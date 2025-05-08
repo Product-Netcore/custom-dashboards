@@ -118,7 +118,8 @@ const AddAnalysisModal: React.FC<AddAnalysisModalProps> = ({
       console.log(`Redirecting to create new ${analysisTypeForCreation} named: ${title}`);
       // Ensure dashboardId is available for context, though not directly used in this navigation path for /create-funnel
       // The new chart will be added to context on the /create-funnel page and then associated with a dashboard.
-      navigate(`/create-funnel?name=${encodeURIComponent(title)}&type=${analysisTypeForCreation}`);
+      const originParam = dashboardId ? `&originDashboardId=${encodeURIComponent(dashboardId)}` : '';
+      navigate(`/create-funnel?name=${encodeURIComponent(title)}&type=${analysisTypeForCreation}${originParam}`);
     }
     onOpenChange(false); 
   };

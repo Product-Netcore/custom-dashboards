@@ -1,22 +1,33 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Info, Plus } from 'lucide-react';
+import { Info, Plus, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { useToast } from "@/hooks/use-toast";
+import { cn } from '@/lib/utils';
+import { Chart } from '@/types/dashboard';
 
 // Placeholder component - needs actual implementation for steps, filters, etc.
 const CreateFunnelPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const initialName = searchParams.get('name') || 'Untitled funnel';
-  const [funnelName, setFunnelName] = React.useState(initialName);
-  const [isEditingName, setIsEditingName] = React.useState(!searchParams.get('name'));
-  
-  const { addNewChartToDashboard, currentDashboard } = useDashboard();
   const navigate = useNavigate();
+  const { addNewChartToDashboard } = useDashboard();
   const { toast } = useToast();
+
+  // --- Mode Detection --- 
+  const analysisId = useMemo(() => searchParams.get('analysisId'), [searchParams]);
+  const originDashboardId = useMemo(() => searchParams.get('originDashboardId'), [searchParams]);
+  const isEditing = !!analysisId;
+  // ------------------
+
+  const initialName = useMemo(() => searchParams.get('name') || (isEditing ? 'Loading...' : 'Untitled funnel'), [searchParams, isEditing]);
+  const [funnelName, setFunnelName] = React.useState(initialName);
+  const [isEditingName, setIsEditingName] = React.useState(!searchParams.get('name') && !isEditing);
+  
+  // TODO: If isEditing, fetch analysis data based on analysisId useEffect(() => { ... }, [analysisId]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFunnelName(e.target.value);
@@ -27,35 +38,56 @@ const CreateFunnelPage: React.FC = () => {
     // Add logic to save/update funnel name if needed
   };
 
-  const handleSave = () => {
-    if (!currentDashboard) {
-      toast({ title: "Error", description: "No active dashboard selected.", variant: "destructive" });
+  // --- Placeholder Handlers --- 
+  const handleSaveToDashboardCreate = () => { 
+    console.log("Action: Save to Dashboard (New)", { originDashboardId, funnelName });
+    if (!originDashboardId) {
+      toast({ title: "Error", description: "Originating dashboard ID missing.", variant: "destructive" });
       return;
     }
-    if (!funnelName.trim()) {
-      toast({ title: "Error", description: "Please enter a name for the funnel.", variant: "destructive" });
-      return;
-    }
+    const finalFunnelName = funnelName.trim() || "Untitled";
 
-    // Create mock chart data for the funnel
-    const funnelChartData = {
-      title: funnelName.trim(),
-      description: "User-created funnel analysis", // Or generate based on steps
+    // Construct chart data
+    // Explicitly define the type for funnelChartData using the Chart interface
+    // Omitting id, createdAt, updatedAt as these should be handled by the context/backend
+    const funnelChartData: Omit<Chart, 'id' | 'createdAt' | 'updatedAt'> = {
+      title: finalFunnelName,
+      description: "User-created funnel analysis",
       type: 'funnel' as const,
       displayMode: 'chart' as const, 
       isFullWidth: false,
+      tableDisplayMode: '#', // Default toggle state
       data: { 
-        // Mock data for the prototype - replace with actual funnel steps/data later
         labels: ['Step A', 'Step B', 'Step C'], 
         values: [500, 350, 150] 
       },
     };
 
-    addNewChartToDashboard(currentDashboard.id, funnelChartData);
-    
-    // Optionally navigate back to the dashboard after saving
-    navigate('/'); // Navigate to the root which should show the current dashboard
+    // Call the actual context function
+    addNewChartToDashboard(originDashboardId, funnelChartData);
+    toast({ title: "Success", description: `Chart '${finalFunnelName}' added to dashboard.`});
+    navigate('/');
   };
+  const handleSaveAsNewCreate = () => { 
+    console.log("Action: Save as New (New)", { funnelName });
+    toast({ title: "Success (Placeholder)", description: `Chart '${funnelName}' saved globally.`});
+    navigate('/');
+  };
+  const handleUpdateExisting = () => { 
+    console.log("Action: Update Existing", { analysisId, funnelName }); 
+    toast({ title: "Success (Placeholder)", description: `Chart '${funnelName}' updated.`});
+    navigate('/');
+  };
+  const handleSaveAsNewEdit = () => { 
+    console.log("Action: Save as New (Edit)", { funnelName }); 
+    toast({ title: "Success (Placeholder)", description: `New chart '${funnelName}' saved globally from edit.`});
+    navigate('/');
+  };
+  const handleTriggerSaveToDashboardModal = () => { 
+    console.log("Action: Trigger Save to Dashboard Modal (Edit)", { funnelName }); 
+    toast({ title: "Info", description: "'Save to dashboard' modal trigger not fully implemented.", variant: "default" });
+  };
+  // --------------------------
 
   return (
     <div className="p-6 bg-gray-50 min-h-full">
@@ -76,7 +108,46 @@ const CreateFunnelPage: React.FC = () => {
           )}
           <span className="text-xs text-gray-500">Created on {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</span>
         </div>
-        <Button onClick={handleSave} className="bg-netcore-save-blue hover:bg-blue-800">Save</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              className={cn(
+                "flex flex-row justify-center items-center",
+                "px-[18px] py-[8px] gap-[6px]",
+                "bg-cobalt-blue hover:bg-cobalt-blue/90",
+                "rounded-[4px]",
+                "text-white font-semibold text-sm leading-5 uppercase tracking-[0.42px]"
+              )}
+            >
+              <span>Save</span>
+              <ChevronDown className="h-[14px] w-[14px]" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {isEditing ? (
+              <>
+                <DropdownMenuItem onClick={handleUpdateExisting}>
+                  Update existing
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSaveAsNewEdit}>
+                  Save as new
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleTriggerSaveToDashboardModal}>
+                  Save to dashboard
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem onClick={handleSaveToDashboardCreate} disabled={!originDashboardId}>
+                  Save to dashboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSaveAsNewCreate}>
+                  Save as new
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Filters Section - Placeholder */}
