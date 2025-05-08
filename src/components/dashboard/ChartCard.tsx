@@ -66,6 +66,11 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   // State for the table display toggle (% or #)
   const [activeTableToggle, setActiveTableToggle] = useState<'#' | '%'>(chart.tableDisplayMode || '#');
 
+  // Cooldown state
+  const [cooldownEndTime, setCooldownEndTime] = useState<number | null>(null);
+  const [isCoolingDown, setIsCoolingDown] = useState<boolean>(false);
+  const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null); // Ref to store timeout ID
+
   // Update currentViewLabel if chart.type or chart.displayMode changes from props
   useEffect(() => {
     setCurrentViewLabel(getDefaultViewLabel(chart.type, chart.displayMode));
@@ -88,7 +93,40 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   };
 
   const handleDelete = () => removeChart(dashboardId, chart.id);
-  const handleChartRefresh = () => console.log(`Refreshing chart: ${chart.title}`);
+
+  // Updated Refresh Handler
+  const handleChartRefresh = () => {
+    if (isCoolingDown) return; // Prevent action if cooling down
+
+    console.log(`Refreshing chart: ${chart.title}`);
+    // --- Trigger actual data refresh logic here ---
+
+    const endTime = Date.now() + 15 * 60 * 1000; // 15 minutes
+    setCooldownEndTime(endTime);
+    setIsCoolingDown(true);
+
+    // Clear existing timer if any (safety measure)
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+    }
+
+    // Set timer to end cooldown
+    cooldownTimerRef.current = setTimeout(() => {
+      setIsCoolingDown(false);
+      setCooldownEndTime(null);
+      cooldownTimerRef.current = null;
+    }, 15 * 60 * 1000);
+  };
+
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleDownload = (format: 'png' | 'csv') => console.log(`Downloading chart ${chart.title} as ${format}`);
   const handleViewAnalysis = () => navigate(`/analysis/${chart.type}/${chart.id}`);
   const handleDuplicateChart = () => duplicateChart(dashboardId, chart.id);
@@ -431,10 +469,43 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                       </TooltipContent>
                   </Tooltip>
               </TooltipProvider>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 hover:bg-gray-100" onClick={handleChartRefresh}>
-                <RefreshCw size={16} />
-                <span className="sr-only">Refresh chart</span>
-              </Button>
+              
+              {/* Refresh Button with Cooldown Tooltip */}
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* Need to wrap disabled button in a span for tooltip to work reliably */}
+                    <span tabIndex={isCoolingDown ? 0 : -1}> 
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-7 w-7 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" 
+                        onClick={handleChartRefresh}
+                        disabled={isCoolingDown}
+                        aria-disabled={isCoolingDown} // For accessibility
+                      >
+                        <RefreshCw size={16} />
+                        <span className="sr-only">Refresh chart</span>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {isCoolingDown && cooldownEndTime && (
+                    <TooltipContent side="top">
+                      {
+                        (() => {
+                          const remainingMs = cooldownEndTime - Date.now();
+                          const remainingMinutes = Math.max(0, Math.ceil(remainingMs / (1000 * 60)));
+                          return (
+                            <p>
+                              Refresh available after {remainingMinutes} min{remainingMinutes === 1 ? '' : 's'}
+                            </p>
+                          );
+                        })()
+                      }
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
             <Button variant="link" size="sm" className="text-sm text-netcore-blue hover:text-blue-700 p-0 h-auto" onClick={handleViewAnalysis}>
                 View analysis <ArrowRight size={12} className="ml-1" />
