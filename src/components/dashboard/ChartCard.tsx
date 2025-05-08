@@ -210,7 +210,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <h3 
-                            className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors min-w-0"
+                            className="font-sans font-semibold text-base leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors min-w-0"
                             onClick={handleEditTitle} 
                             title={isTruncated ? chart.title : undefined}
                           >
@@ -362,7 +362,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                   <Tooltip>
                       <TooltipTrigger asChild>
                           <p 
-                              className="text-xs text-gray-400 cursor-pointer hover:text-netcore-blue"
+                              className="text-sm text-gray-400 cursor-pointer hover:text-netcore-blue"
                               onClick={toggleChartTimeFormat}
                           >
                               Last updated: {
@@ -382,7 +382,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                 <span className="sr-only">Refresh chart</span>
               </Button>
             </div>
-            <Button variant="link" size="sm" className="text-xs text-netcore-blue hover:text-blue-700 p-0 h-auto" onClick={handleViewAnalysis}>
+            <Button variant="link" size="sm" className="text-sm text-netcore-blue hover:text-blue-700 p-0 h-auto" onClick={handleViewAnalysis}>
                 View analysis <ArrowRight size={12} className="ml-1" />
             </Button>
         </div>

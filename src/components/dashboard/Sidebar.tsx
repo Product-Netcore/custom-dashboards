@@ -235,48 +235,26 @@ const Sidebar: React.FC = () => {
         
         <hr className="mx-4 my-3 border-gray-200" />
 
-        <div className="px-4 space-y-2 pb-4"> 
-          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            Insight Generator
-          </h2>
-          <ul>
-            <li>
-              <button
-                onClick={handleInsightGeneratorClick}
-                className={cn(
-                  "w-full text-left px-3 py-2.5 text-sm rounded-md flex items-center gap-3", 
-                  currentView === 'insightGenerator'
-                    ? "bg-blue-100 text-netcore-blue font-medium"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                )}
-              >
-                <MessageSquare className={cn("h-5 w-5", currentView === 'insightGenerator' ? "text-netcore-blue" : "text-gray-500")} /> 
-                Ask AI for Insights
-              </button>
-            </li>
-          </ul>
+        <div className="px-2 pb-4">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
+            onClick={handleMinimizeClick}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Minimize this
+          </Button>
         </div>
+
+        {dashboardToDelete && (
+          <DeleteDashboardModal
+            dashboardName={dashboardToDelete.name}
+            isOpen={true}
+            onClose={() => setDashboardToDelete(null)}
+            onConfirm={handleDeleteConfirm}
+          />
+        )}
       </div> 
-
-      <div className="p-2 border-t border-border mt-auto"> 
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
-          onClick={handleMinimizeClick}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Minimize this
-        </Button>
-      </div>
-
-      {dashboardToDelete && (
-        <DeleteDashboardModal
-          dashboardName={dashboardToDelete.name}
-          isOpen={true}
-          onClose={() => setDashboardToDelete(null)}
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
     </aside>
   );
 };
