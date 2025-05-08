@@ -1,9 +1,11 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info, Plus } from 'lucide-react';
+import { useDashboard } from '@/contexts/DashboardContext';
+import { useToast } from "@/hooks/use-toast";
 
 // Placeholder component - needs actual implementation for steps, filters, etc.
 const CreateFunnelPage: React.FC = () => {
@@ -11,6 +13,10 @@ const CreateFunnelPage: React.FC = () => {
   const initialName = searchParams.get('name') || 'Untitled funnel';
   const [funnelName, setFunnelName] = React.useState(initialName);
   const [isEditingName, setIsEditingName] = React.useState(!searchParams.get('name'));
+  
+  const { addNewChartToDashboard, currentDashboard } = useDashboard();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFunnelName(e.target.value);
@@ -19,6 +25,36 @@ const CreateFunnelPage: React.FC = () => {
   const handleNameBlur = () => {
     setIsEditingName(false);
     // Add logic to save/update funnel name if needed
+  };
+
+  const handleSave = () => {
+    if (!currentDashboard) {
+      toast({ title: "Error", description: "No active dashboard selected.", variant: "destructive" });
+      return;
+    }
+    if (!funnelName.trim()) {
+      toast({ title: "Error", description: "Please enter a name for the funnel.", variant: "destructive" });
+      return;
+    }
+
+    // Create mock chart data for the funnel
+    const funnelChartData = {
+      title: funnelName.trim(),
+      description: "User-created funnel analysis", // Or generate based on steps
+      type: 'funnel' as const,
+      displayMode: 'chart' as const, 
+      isFullWidth: false,
+      data: { 
+        // Mock data for the prototype - replace with actual funnel steps/data later
+        labels: ['Step A', 'Step B', 'Step C'], 
+        values: [500, 350, 150] 
+      },
+    };
+
+    addNewChartToDashboard(currentDashboard.id, funnelChartData);
+    
+    // Optionally navigate back to the dashboard after saving
+    navigate('/'); // Navigate to the root which should show the current dashboard
   };
 
   return (
@@ -40,7 +76,7 @@ const CreateFunnelPage: React.FC = () => {
           )}
           <span className="text-xs text-gray-500">Created on {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</span>
         </div>
-        <Button className="bg-netcore-save-blue hover:bg-blue-800">Save</Button>
+        <Button onClick={handleSave} className="bg-netcore-save-blue hover:bg-blue-800">Save</Button>
       </div>
 
       {/* Filters Section - Placeholder */}

@@ -170,13 +170,13 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <div className="flex flex-row justify-between items-center p-4 gap-2.5 bg-white w-full">
-          <div className={cn("flex items-center gap-2 min-w-0", isEditingTitle ? "flex-1" : "flex-initial")}>
+        <div className="flex flex-row justify-between items-start p-4 gap-2.5 bg-white w-full">
+          <div className={cn("flex items-start gap-2 min-w-0", isEditingTitle ? "flex-1" : "flex-initial")}>
             <button 
               {...attributes} 
               {...listeners} 
               className={cn(
-                "cursor-grab text-[#6F6F8D] p-1 opacity-0 group-hover:opacity-100 focus:outline-none transition-opacity",
+                "cursor-grab text-[#6F6F8D] p-1 opacity-0 group-hover:opacity-100 focus:outline-none transition-opacity mt-1",
                 isDragging && "cursor-grabbing",
                 isEditingTitle && "invisible"
                )} 
@@ -186,47 +186,57 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
               <GripVertical size={18} />
             </button>
             
-            <div className={cn(
-              "flex items-center gap-1.5 min-w-0 group/title",
-              isEditingTitle ? "flex-1" : "flex-initial"
-            )}>
-              {isEditingTitle ? (
-                <Input
-                  ref={titleInputRef}
-                  value={newTitle}
-                  onChange={handleTitleChange}
-                  onBlur={handleTitleSave}
-                  onKeyDown={handleTitleKeyDown}
-                  className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black h-8 px-1 border-blue-500 ring-1 ring-blue-500 flex-1"
-                />
-              ) : (
-                <>
-                  <TooltipProvider delayDuration={150}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <h3 
-                          className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors min-w-0"
-                          onClick={handleEditTitle} 
-                          title={isTruncated ? chart.title : undefined}
-                        >
-                          {chart.title}
-                        </h3>
-                      </TooltipTrigger>
-                      {isTruncated && (
-                        <TooltipContent>
-                          <p>{chart.title}</p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                  <button 
-                    onClick={handleEditTitle}
-                    className="text-gray-400 opacity-0 group-hover/title:opacity-100 hover:text-blue-600 transition-opacity focus:outline-none p-1"
-                    aria-label="Edit chart title"
-                   >
-                     <Edit2 size={14} />
-                   </button>
-                </>
+            <div className="flex flex-col">
+              <div className={cn(
+                "flex items-center gap-1.5 min-w-0 group/title",
+                isEditingTitle ? "flex-1" : "flex-initial"
+              )}>
+                {isEditingTitle ? (
+                  <Input
+                    ref={titleInputRef}
+                    value={newTitle}
+                    onChange={handleTitleChange}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleTitleKeyDown}
+                    className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black h-8 px-1 border-blue-500 ring-1 ring-blue-500 flex-1"
+                  />
+                ) : (
+                  <>
+                    <TooltipProvider delayDuration={150}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <h3 
+                            className="font-sans font-semibold text-lg leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors min-w-0"
+                            onClick={handleEditTitle} 
+                            title={isTruncated ? chart.title : undefined}
+                          >
+                            {chart.title}
+                          </h3>
+                        </TooltipTrigger>
+                        {isTruncated && (
+                          <TooltipContent>
+                            <p>{chart.title}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                    <button 
+                      onClick={handleEditTitle}
+                      className="text-gray-400 opacity-0 group-hover/title:opacity-100 hover:text-blue-600 transition-opacity focus:outline-none p-1"
+                      aria-label="Edit chart title"
+                     >
+                       <Edit2 size={14} />
+                     </button>
+                  </>
+                )}
+              </div>
+
+              {!isEditingTitle && (
+                <div className="mt-1 text-xs text-gray-500 flex items-center">
+                  <span>Last 7 days</span>
+                  <span className="mx-1.5 text-gray-400">•</span>
+                  <span>All contacts</span>
+                </div>
               )}
             </div>
           </div>

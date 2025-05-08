@@ -30,6 +30,7 @@ interface DashboardContextProps {
   duplicateChart: (dashboardId: string, chartId: string) => void;
   addChartToExistingDashboard: (targetDashboardId: string, chartToCopy: Chart) => void;
   createDashboardWithChart: (newDashboardName: string | undefined, chartToCopy: Chart) => void;
+  addNewChartToDashboard: (dashboardId: string, chartData: Omit<Chart, 'id' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 const DashboardContext = createContext<DashboardContextProps | undefined>(undefined);
@@ -429,6 +430,36 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     toast({ title: "Dashboard Created", description: `Dashboard "${name}" created with chart "${chartToCopy.title}".` });
   };
 
+  // Function to add a brand new chart (created by user) to a dashboard
+  const addNewChartToDashboard = (dashboardId: string, chartData: Omit<Chart, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newChart: Chart = {
+      ...chartData,
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`, // More robust ID
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    setCustomDashboards(prev => {
+      const updatedDashboards = prev.map(dashboard =>
+        dashboard.id === dashboardId
+          ? { ...dashboard, charts: [...dashboard.charts, newChart], updatedAt: new Date() }
+          : dashboard
+      );
+      localStorage.setItem('customDashboards', JSON.stringify(updatedDashboards));
+      // Update currentDashboard state if the modified dashboard is the current one
+      if (currentDashboard?.id === dashboardId) {
+        const updatedCurrent = updatedDashboards.find(d => d.id === dashboardId);
+        if (updatedCurrent) setCurrentDashboard(parseDashboardDates(updatedCurrent));
+      }
+      return updatedDashboards.map(parseDashboardDates);
+    });
+
+    toast({
+      title: "Analysis Saved",
+      description: `'${newChart.title}' added to the dashboard.`,
+    });
+  };
+
   // Combine system and custom dashboards for consumers that need the full list
   const allDashboards = [...systemDashboardsState, ...customDashboardsState];
 
@@ -457,7 +488,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         renameChart,
         duplicateChart,
         addChartToExistingDashboard,
-        createDashboardWithChart
+        createDashboardWithChart,
+        addNewChartToDashboard
       }}
     >
       {children}

@@ -13,7 +13,7 @@ export interface Dashboard {
   updatedAt: Date;
 }
 
-export type ChartType = 'funnel' | 'rfm' | 'cohort' | 'userPath' | 'behavior' | 'bar';
+export type ChartType = 'funnel' | 'rfm' | 'cohort' | 'userPath' | 'behavior' | 'bar' | 'segment' | 'retention';
 
 export type DisplayMode = 'chart' | 'kpi' | 'chartAndKpi' | 'table' | 'transposedTable' | 'studio';
 

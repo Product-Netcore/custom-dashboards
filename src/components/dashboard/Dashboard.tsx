@@ -187,8 +187,9 @@ const Dashboard: React.FC = () => {
       <AddAnalysisModal 
         open={addAnalysisModalOpen}
         onOpenChange={setAddAnalysisModalOpen}
-        analysisType={selectedAnalysisType}
+        initialAnalysisType={selectedAnalysisType}
         dashboardId={currentDashboard?.id ?? null}
+        currentDashboardHasCharts={hasCharts}
       />
     </div>
   );
