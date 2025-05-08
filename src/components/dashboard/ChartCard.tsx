@@ -208,18 +208,20 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <div className="flex flex-row justify-between items-start p-4 gap-2.5 bg-white w-full">
+        <div className="flex flex-row justify-between items-start pt-4 pr-4 pb-4 pl-2 gap-2.5 bg-white w-full">
           <div className={cn("flex items-start gap-2 min-w-0", isEditingTitle ? "flex-1" : "flex-initial")}>
+            {/* Always render button, use visibility classes */} 
             <button 
               {...attributes} 
               {...listeners} 
               className={cn(
-                "cursor-grab text-[#6F6F8D] p-1 opacity-0 group-hover:opacity-100 focus:outline-none transition-opacity mt-1",
+                "cursor-grab text-[#6F6F8D] focus:outline-none mt-1", // Removed p-1
+                "invisible group-hover:visible", // Add visibility classes
                 isDragging && "cursor-grabbing",
-                isEditingTitle && "invisible"
+                isEditingTitle && "invisible" // Keep invisible if editing title
                )} 
                aria-label="Drag to reorder chart"
-               style={{ width: '24px', height: '24px' }}
+               style={{ width: '16px', height: '24px' }} // Reduced width
             >
               <GripVertical size={18} />
             </button>
