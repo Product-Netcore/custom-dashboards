@@ -109,7 +109,7 @@ const Sidebar: React.FC = () => {
         <h1 className="text-2xl font-semibold text-gray-800">Dashboards</h1>
       </div>
       
-      <div className="flex-1 overflow-y-auto overscroll-contain-y"> 
+      <div className="flex-1 flex flex-col min-h-0"> 
         <nav className="p-2 pt-4"> 
           <ul>
             {navItems.map((item) => (
@@ -133,7 +133,7 @@ const Sidebar: React.FC = () => {
 
         <hr className="mx-4 my-3 border-gray-200" />
 
-        <div className="px-4 pb-2 space-y-3"> 
+        <div className="px-4 pb-2 space-y-3 flex-1 min-h-0"> 
           <div className="flex items-center justify-between"> 
             <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
               Custom Dashboards
@@ -151,7 +151,7 @@ const Sidebar: React.FC = () => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="top">
-                  <p>Create Dashboard ({filteredDashboards.length}/300)</p>
+                  <p>Create Dashboard</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -232,29 +232,27 @@ const Sidebar: React.FC = () => {
             )}
           </ul>
         </div>
-        
-        <hr className="mx-4 my-3 border-gray-200" />
-
-        <div className="px-2 pb-4">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
-            onClick={handleMinimizeClick}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Minimize this
-          </Button>
-        </div>
-
-        {dashboardToDelete && (
-          <DeleteDashboardModal
-            dashboardName={dashboardToDelete.name}
-            isOpen={true}
-            onClose={() => setDashboardToDelete(null)}
-            onConfirm={handleDeleteConfirm}
-          />
-        )}
       </div> 
+
+      <div className="px-2 py-2 border-t border-gray-200 mt-auto"> 
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
+          onClick={handleMinimizeClick}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Minimize this
+        </Button>
+      </div>
+
+      {dashboardToDelete && (
+        <DeleteDashboardModal
+          dashboardName={dashboardToDelete.name}
+          isOpen={true}
+          onClose={() => setDashboardToDelete(null)}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </aside>
   );
 };

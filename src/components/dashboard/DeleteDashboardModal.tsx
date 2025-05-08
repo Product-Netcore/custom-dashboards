@@ -1,22 +1,12 @@
-
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 import {
   AlertDialog,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface DeleteDashboardModalProps {
   dashboardName: string;
@@ -33,42 +23,29 @@ const DeleteDashboardModal: React.FC<DeleteDashboardModalProps> = ({
 }) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="sm:max-w-[425px]">
-        <AlertDialogHeader className="bg-[#FDECEA] rounded-t-lg p-4">
-          <AlertDialogTitle className="text-xl font-bold flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-red-500" />
-            Delete Custom Dashboard
-          </AlertDialogTitle>
-        </AlertDialogHeader>
-
-        <div className="p-6">
-          <AlertDialogDescription className="text-base text-foreground">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="font-medium">{dashboardName}</span>
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
-            </div>
-            Are you sure you want to delete this dashboard?
-          </AlertDialogDescription>
+      <AlertDialogContent className="sm:max-w-[480px] p-8 flex flex-col items-center gap-6">
+        <div className="w-48 h-48 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 mb-4">
+          [Illustration Placeholder]
         </div>
 
-        <AlertDialogFooter className="px-6 pb-6">
-          <AlertDialogCancel asChild>
-            <Button variant="outline" className="text-muted-foreground">
-              Cancel
-            </Button>
-          </AlertDialogCancel>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button onClick={onConfirm} variant="default" className="bg-netcore-blue hover:bg-netcore-dark-blue">
-                  Delete
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>This action cannot be undone.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <p className="text-lg font-medium text-center text-foreground">
+          Are you sure want to remove "{dashboardName}"?
+        </p>
+
+        <AlertDialogFooter className="flex flex-row justify-center gap-4 w-full sm:justify-center">
+          <Button 
+            variant="outline" 
+            onClick={onClose}
+            className="border-cobalt-blue text-cobalt-blue hover:bg-cobalt-blue/5 hover:text-cobalt-blue px-6"
+          >
+            NO
+          </Button>
+          <Button 
+            className="bg-red-500 hover:bg-red-600 text-white px-6"
+            onClick={onConfirm}
+          >
+            YES, REMOVE
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
