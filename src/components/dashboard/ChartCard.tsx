@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import AddToAnotherDashboardModal from './AddToAnotherDashboardModal';
+import { getChartViewOptions, getDefaultViewLabel, ViewOption } from '@/config/chartViewOptions';
 
 // --- Placeholder Chart Visualizations ---
 const PlaceholderChart: React.FC<{ type: ChartType, data: any }> = ({ type, data }) => {
@@ -57,6 +58,16 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [displayChartRelativeTime, setDisplayChartRelativeTime] = useState(true); // For chart card footer
   const [isAddToAnotherOpen, setIsAddToAnotherOpen] = useState(false);
+  
+  // State for the currently selected view label in the dropdown
+  const [currentViewLabel, setCurrentViewLabel] = useState<string>(
+    () => getDefaultViewLabel(chart.type, chart.displayMode)
+  );
+
+  // Update currentViewLabel if chart.type or chart.displayMode changes from props
+  useEffect(() => {
+    setCurrentViewLabel(getDefaultViewLabel(chart.type, chart.displayMode));
+  }, [chart.type, chart.displayMode]);
 
   const { 
     attributes, 
@@ -162,6 +173,17 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   const iconClass = "h-[18px] w-[18px]";
   const subMenuItemClass = "flex items-center justify-between w-full h-auto px-3 py-2 text-sm font-semibold tracking-[0.42px] cursor-pointer focus:outline-none rounded-none relative text-[#6F6F8D]"; // Adjusted for sub-menu
 
+  // Get dynamic view options
+  const viewOptions = getChartViewOptions(chart.type);
+
+  // Handler for selecting a new view option
+  const handleViewOptionSelect = (option: ViewOption) => {
+    setCurrentViewLabel(option.label);
+    // Later, we can add logic here to update chart.displayMode or other properties via context
+    // For example: updateChartDisplayMode(dashboardId, chart.id, option.baseMode, option.subType);
+    console.log(`View selected: ${option.label}`); 
+  };
+
   return (
     <>
       <div
@@ -249,22 +271,24 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center justify-between gap-2.5 bg-[#F8F8F8] rounded-[4px] px-3 py-2 h-9 border-none hover:bg-gray-100 w-[174px]">
-                   <span className="flex-1 font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#6F6F8D] truncate text-left">{chart.displayMode.replace('_', ' + ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                   <span className="flex-1 font-sans font-normal text-sm leading-5 tracking-[0.42px] text-[#6F6F8D] truncate text-left">
+                     {currentViewLabel}
+                   </span>
                    <ChevronDown size={16} className="text-[#6F6F8D] flex-shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[174px] bg-white border-menu-item-border shadow-lg rounded-md p-0">
-                {['Chart', 'Table', 'Chart_Table'].map((mode) => (
+              <DropdownMenuContent align="end" className="w-auto min-w-[174px] bg-white border-menu-item-border shadow-lg rounded-md p-0">
+                {viewOptions.map((option) => (
                   <DropdownMenuItem
-                    key={mode}
+                    key={option.label}
                     className={cn(
                         menuItemBaseClass, 
                         menuItemHoverClass,
-                        "h-auto py-2.5" // Adjusted padding for these specific items
+                        "h-auto py-2.5"
                     )}
-                    onClick={() => console.log(`Switch to ${mode}`)} // Replace with actual handler
+                    onClick={() => handleViewOptionSelect(option)}
                   >
-                    {mode.replace('_', ' + ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {option.label}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
