@@ -119,31 +119,10 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
             )}
           </div>
         )}
-        {!isSystemDashboard && (
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <p 
-                  className="text-sm text-muted-foreground cursor-pointer hover:text-netcore-blue transition-colors"
-                  onClick={toggleTimeFormat}
-                >
-                  Last refreshed: {
-                    displayRelativeTime 
-                      ? formatRelativeTime(dashboard.updatedAt) 
-                      : dashboard.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
-                  }
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{dashboard.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
-         {isSystemDashboard && (
-            <p className="text-sm text-muted-foreground">
-                System dashboard with analysis examples
-            </p>
+        {isSystemDashboard && (
+          <p className="text-sm text-muted-foreground">
+            System dashboard with analysis examples
+          </p>
         )}
       </div>
       
