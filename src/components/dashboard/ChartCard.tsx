@@ -457,7 +457,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                               className="text-sm text-gray-400 cursor-pointer hover:text-netcore-blue"
                               onClick={toggleChartTimeFormat}
                           >
-                              Last updated: {
+                              Last refreshed: {
                                   displayChartRelativeTime 
                                   ? formatRelativeTime(chart.updatedAt) 
                                   : chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
