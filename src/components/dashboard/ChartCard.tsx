@@ -310,7 +310,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
               </div>
 
               {!isEditingTitle && (
-                <div className="mt-1 text-xs text-gray-500 flex items-center">
+                <div className="mt-1 text-sm text-gray-500 flex items-center">
                   <span>Last 7 days</span>
                   <span className="mx-1.5 text-gray-400">•</span>
                   <span>All contacts</span>

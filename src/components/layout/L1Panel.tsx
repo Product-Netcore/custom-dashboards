@@ -2,14 +2,31 @@ import React from 'react';
 import { LayoutGrid, Settings, User, Volume2, Users, FileText, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { useNavigate } from 'react-router-dom';
+import { useDashboard } from '@/contexts/DashboardContext';
 
 const L1Panel: React.FC = () => {
   const iconSize = 28; // Increase icon size
-  // Use standard icon color, e.g., netcore-nav-icon or a suitable gray/blue
-  // const iconColor = "text-gray-400"; // Removing this variable as color is applied directly
+  const navigate = useNavigate();
+  const { systemDashboards, customDashboards, setCurrentDashboard, setCurrentView } = useDashboard();
+
+  const handleDashboardsClick = () => {
+    let allChartsDashboard = customDashboards.find(d => d.name === 'All Charts');
+    if (!allChartsDashboard) {
+      allChartsDashboard = systemDashboards.find(d => d.name === 'All Charts' || d.id === 'all-charts-dashboard');
+    }
+
+    if (allChartsDashboard) {
+      setCurrentDashboard(allChartsDashboard);
+      setCurrentView('dashboard');
+      navigate('/');
+    } else {
+      console.warn("'All Charts' dashboard not found. Cannot navigate.");
+    }
+  };
 
   const navItems = [
-    { icon: LayoutGrid, label: 'Apps' },
+    { icon: LayoutGrid, label: 'Dashboards', action: handleDashboardsClick },
     { icon: Volume2, label: 'Campaigns' },
     { icon: Users, label: 'Audience' },
     { icon: FileText, label: 'Content' },
@@ -33,7 +50,12 @@ const L1Panel: React.FC = () => {
             <Tooltip key={index}>
               <TooltipTrigger asChild>
                  {/* Update icon color to white */}
-                <Button variant="ghost" size="icon" className="w-10 h-10 text-white hover:bg-blue-700/50">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="w-10 h-10 text-white hover:bg-blue-700/50"
+                  onClick={item.action ? item.action : () => console.log(`${item.label} clicked`)}
+                >
                   <item.icon size={iconSize} />
                   <span className="sr-only">{item.label}</span>
                 </Button>
