@@ -5,9 +5,9 @@ import { Chart, ChartType } from '@/types/dashboard';
 import { useDashboard } from '@/contexts/DashboardContext';
 import { Button } from '@/components/ui/button';
 import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger, 
   DropdownMenuSeparator,
   DropdownMenuSub,
@@ -282,8 +282,8 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                 ) : (
                   <>
                     <TooltipProvider delayDuration={150}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
                           <h3 
                             className="font-sans font-semibold text-base leading-6 tracking-[0.42px] text-black truncate cursor-pointer hover:text-blue-600 transition-colors min-w-0"
                             onClick={handleEditTitle} 
@@ -291,14 +291,14 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                           >
                             {chart.title}
                           </h3>
-                        </TooltipTrigger>
+                </TooltipTrigger>
                         {isTruncated && (
-                          <TooltipContent>
+                <TooltipContent>
                             <p>{chart.title}</p>
-                          </TooltipContent>
+                </TooltipContent>
                         )}
-                      </Tooltip>
-                    </TooltipProvider>
+              </Tooltip>
+            </TooltipProvider>
                     <button 
                       onClick={handleEditTitle}
                       className="text-gray-400 opacity-0 group-hover/title:opacity-100 hover:text-blue-600 transition-opacity focus:outline-none p-1"
@@ -328,7 +328,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                      {currentViewLabel}
                    </span>
                    <ChevronDown size={16} className="text-[#6F6F8D] flex-shrink-0" />
-                </Button>
+                  </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-auto min-w-[174px] bg-white border-menu-item-border shadow-lg rounded-md p-0">
                 {viewOptions.map((option) => (
@@ -349,9 +349,9 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
                   className={cn(
                     "h-8 w-8 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
                     "transition-opacity duration-150 ease-in-out"
@@ -359,8 +359,8 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                   aria-label="Chart options"
                 >
                   <MoreVertical size={18} />
-                </Button>
-              </DropdownMenuTrigger>
+                      </Button>
+                    </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
                 className="w-[274px] bg-white border-menu-item-border shadow-lg rounded-md p-0"
@@ -418,8 +418,8 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                   <span>Remove from dashboard</span>
                   <Trash2 className={iconClass} />
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
           </div>
         </div>
 
@@ -452,44 +452,44 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
         <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-white">
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
               <TooltipProvider delayDuration={150}>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
                           <p 
                               className="text-sm text-gray-400 cursor-pointer hover:text-netcore-blue"
                               onClick={toggleChartTimeFormat}
-                          >
+                  >
                               Last refreshed: {
                                   displayChartRelativeTime 
                                   ? formatRelativeTime(chart.updatedAt) 
                                   : chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')
                               }
                           </p>
-                      </TooltipTrigger>
+                </TooltipTrigger>
                       <TooltipContent side="top">
                           <p>{chart.updatedAt.toLocaleString([], absoluteDateTimeFormat).replace(',', ';')}</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </TooltipProvider>
-              
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
               {/* Refresh Button with Cooldown Tooltip */}
               <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              <Tooltip>
+                <TooltipTrigger asChild>
                     {/* Need to wrap disabled button in a span for tooltip to work reliably */}
                     <span tabIndex={isCoolingDown ? 0 : -1}> 
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
                         className="h-7 w-7 text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed" 
                         onClick={handleChartRefresh}
                         disabled={isCoolingDown}
                         aria-disabled={isCoolingDown} // For accessibility
-                      >
+                  >
                         <RefreshCw size={16} />
                         <span className="sr-only">Refresh chart</span>
-                      </Button>
+                  </Button>
                     </span>
-                  </TooltipTrigger>
+                </TooltipTrigger>
                   {isCoolingDown && cooldownEndTime && (
                     <TooltipContent side="top">
                       {
@@ -503,16 +503,16 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                           );
                         })()
                       }
-                    </TooltipContent>
+                </TooltipContent>
                   )}
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
             <Button variant="link" size="sm" className="text-sm text-gray-500 hover:text-gray-700 p-0 h-auto" onClick={handleViewAnalysis}>
                 View analysis <ArrowRight size={12} className="ml-1" />
             </Button>
         </div>
-      </div>
+          </div>
       {isAddToAnotherOpen && (
           <AddToAnotherDashboardModal
             isOpen={isAddToAnotherOpen}

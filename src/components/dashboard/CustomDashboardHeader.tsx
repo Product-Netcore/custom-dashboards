@@ -96,21 +96,21 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <h1 
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h1 
                     className="text-2xl font-bold cursor-pointer hover:text-netcore-blue transition-colors mb-1"
-                    onClick={isSystemDashboard ? undefined : onEditTitle}
-                  >
-                    {dashboard.name}
-                  </h1>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{isSystemDashboard ? "System dashboards cannot be renamed" : "Click to rename your dashboard."}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                  onClick={isSystemDashboard ? undefined : onEditTitle}
+                >
+                  {dashboard.name}
+                </h1>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isSystemDashboard ? "System dashboards cannot be renamed" : "Click to rename your dashboard."}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
             {!isSystemDashboard && (
               <Edit2 
                 className="h-5 w-5 text-gray-500 hover:text-netcore-blue cursor-pointer mb-1" 
@@ -120,78 +120,78 @@ const CustomDashboardHeader: React.FC<CustomDashboardHeaderProps> = ({
           </div>
         )}
         {isSystemDashboard && (
-          <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
             System dashboard with analysis examples
-          </p>
+        </p>
         )}
       </div>
       
       {isSystemDashboard ? (
         dashboard.id !== 'system-home' && (
-          <div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
+        <div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
                         className="flex items-center justify-center px-[14px] py-[6px] w-[66px] h-8 bg-cobalt-blue hover:bg-blue-800 rounded text-white text-sm font-semibold leading-5 uppercase tracking-wider"
-                      >
-                        Save
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="rounded-md border shadow-md">
+                    >
+                      Save
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="rounded-md border shadow-md">
                       <DropdownMenuItem onClick={() => onAddAnalysis('funnel')}>
-                        Save chart to dashboard
-                      </DropdownMenuItem>
+                      Save chart to dashboard
+                    </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onAddAnalysis('behavior')}>
-                        Save table to dashboard
-                      </DropdownMenuItem>
+                      Save table to dashboard
+                    </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onAddAnalysis('rfm')}>
-                        Save to My Studio
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save this chart or table to a custom dashboard</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+                      Save to My Studio
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save this chart or table to a custom dashboard</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         )
       ) : (
         <div className="flex space-x-2">
           {hasCharts && (
             <>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                     <Button 
                       className="flex flex-row items-center justify-center h-8 px-[14px] py-[6px] gap-[6px] bg-cobalt-blue text-white rounded-[4px] text-sm font-semibold uppercase tracking-wider hover:bg-blue-800"
                       onClick={() => onAddAnalysis()}
                     >
-                      <span>Add Analysis</span>
+                      <span>Add widget</span>
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
+              </TooltipTrigger>
+              <TooltipContent>
                     <p>Add a new analysis to your dashboard.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                     <Button variant="outline" size="icon" onClick={handleSubscribeClick} className="h-8 w-8">
                       <Bell className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
                     <p>Subscribe to this dashboard</p> 
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
             </>
           )}
         </div>

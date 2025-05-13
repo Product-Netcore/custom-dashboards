@@ -146,7 +146,7 @@ const AddAnalysisModal: React.FC<AddAnalysisModalProps> = ({
       >
         <DialogHeader className="flex flex-row justify-between items-center w-full p-0">
           <DialogTitle className="font-sans font-bold text-base leading-[22px] text-charcoal tracking-[0.42px] text-left">
-            Add analysis
+            Add widget
           </DialogTitle>
         </DialogHeader>
         
@@ -182,7 +182,7 @@ const AddAnalysisModal: React.FC<AddAnalysisModalProps> = ({
                       isExistingDisabled && "cursor-not-allowed text-muted-foreground"
                     )}
                   >
-                    Add existing
+                    Existing analysis
                   </Label>
                 </div>
               </TooltipTrigger>
@@ -197,7 +197,7 @@ const AddAnalysisModal: React.FC<AddAnalysisModalProps> = ({
 
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="createNew" id="r-createNew" />
-            <Label htmlFor="r-createNew" className="font-normal text-sm text-black font-nunito tracking-[0.29px]">Create new</Label>
+            <Label htmlFor="r-createNew" className="font-normal text-sm text-black font-nunito tracking-[0.29px]">Create new analysis</Label>
           </div>
         </RadioGroup>
 

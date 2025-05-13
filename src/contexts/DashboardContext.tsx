@@ -36,35 +36,90 @@ interface DashboardContextProps {
 const DashboardContext = createContext<DashboardContextProps | undefined>(undefined);
 
 // Helper function to parse dates stored as strings in localStorage
-const parseDashboardDates = (dashboard: Dashboard): Dashboard => ({
-  ...dashboard,
-  createdAt: new Date(dashboard.createdAt),
-  updatedAt: new Date(dashboard.updatedAt),
-  charts: dashboard.charts.map(chart => ({
-    ...chart,
-    createdAt: new Date(chart.createdAt),
-    updatedAt: new Date(chart.updatedAt),
-    isBodyHidden: chart.isBodyHidden ?? false, // Ensure default during parsing
-  }))
-});
+const parseDashboardDates = (dashboard: Dashboard): Dashboard => {
+  try {
+    const charts = Array.isArray(dashboard.charts) ? dashboard.charts.map(chart => ({
+      ...chart,
+      createdAt: chart.createdAt ? new Date(chart.createdAt) : new Date(), // Fallback
+      updatedAt: chart.updatedAt ? new Date(chart.updatedAt) : new Date(), // Fallback
+      isBodyHidden: chart.isBodyHidden ?? false,
+    })) : [];
+
+    return {
+      ...dashboard,
+      createdAt: dashboard.createdAt ? new Date(dashboard.createdAt) : new Date(), // Fallback
+      updatedAt: dashboard.updatedAt ? new Date(dashboard.updatedAt) : new Date(), // Fallback
+      charts,
+    };
+  } catch (error) {
+    console.error("ERROR in parseDashboardDates for dashboard:", dashboard?.id, error);
+    // Return a minimally valid dashboard structure or throw to be caught by the caller
+    // For now, let's try to return something that won't break the app further,
+    // but this dashboard might be missing data or have incorrect dates.
+    return {
+      id: dashboard?.id || `error-id-${Date.now()}`,
+      name: dashboard?.name || "Error: Unparseable Dashboard",
+      type: dashboard?.type || 'custom',
+      charts: [],
+      isPinned: dashboard?.isPinned || false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      // Potentially add an error flag
+      _parseError: true 
+    } as Dashboard;
+  }
+};
 
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [systemDashboardsState, setSystemDashboards] = useState<Dashboard[]>(systemDashboards);
   // Load custom dashboards from localStorage or use initial mock data
   const [customDashboardsState, setCustomDashboards] = useState<Dashboard[]>(() => {
-    const savedDashboards = localStorage.getItem('customDashboards');
-    if (savedDashboards) {
+    const savedDashboardsString = localStorage.getItem('customDashboards');
+    console.log('LOADING customDashboards from localStorage string:', savedDashboardsString);
+    if (savedDashboardsString) {
+      let parsedOverallArray: any[] = [];
       try {
-        const parsedDashboards = JSON.parse(savedDashboards) as Dashboard[];
-        // Ensure dates are converted back to Date objects
-        return parsedDashboards.map(parseDashboardDates);
+        parsedOverallArray = JSON.parse(savedDashboardsString);
+        if (!Array.isArray(parsedOverallArray)) {
+          console.error("Parsed data from localStorage is not an array:", parsedOverallArray);
+          parsedOverallArray = []; // Treat as empty if not an array
+        }
       } catch (error) {
-        console.error("Error parsing custom dashboards from localStorage:", error);
-        return initialCustomDashboards.map(parseDashboardDates); // Fallback to initial
+        console.error("Error parsing the entire customDashboards string from localStorage:", error);
+        // Potentially fall back to initial if the whole string is corrupt
+        console.log('Falling back to initialCustomDashboards due to major parsing error.');
+        return initialCustomDashboards.map(parseDashboardDates);
       }
-    } else {
-      return initialCustomDashboards.map(parseDashboardDates); // Initial load
+
+      const successfullyParsedDashboards: Dashboard[] = [];
+      parsedOverallArray.forEach((dashboardData, index) => {
+        try {
+          // Try to parse and validate one dashboard at a time
+          const dashboard = parseDashboardDates(dashboardData as Dashboard); // Assume structure for now
+          // Add more validation if needed: e.g., check for dashboard.id
+          if (dashboard && dashboard.id) {
+            successfullyParsedDashboards.push(dashboard);
+          } else {
+            console.warn(`Skipping dashboard at index ${index} due to missing id after parsing:`, dashboardData);
+          }
+        } catch (individualError) {
+          console.error(`Error parsing individual dashboard at index ${index} from localStorage:`, individualError, "Data:", dashboardData);
+        }
+      });
+      
+      console.log('SUCCESSFULLY PARSED dashboards from localStorage:', successfullyParsedDashboards.map(d => ({id: d.id, name: d.name, charts: d.charts.length })));
+      
+      if (successfullyParsedDashboards.length > 0) {
+        return successfullyParsedDashboards;
+      } else if (parsedOverallArray.length > 0 && successfullyParsedDashboards.length === 0) {
+        // If we had an array but couldn't parse any item, it's problematic
+        console.warn("Had data from localStorage, but could not successfully parse any dashboard items. Falling back to initial.");
+        return initialCustomDashboards.map(parseDashboardDates);
+      }
     }
+    // Fallback for no savedDashboardsString or if everything went wrong and successfullyParsedDashboards is empty
+    console.log('No valid saved dashboards in localStorage or empty after parsing, using initialCustomDashboards.');
+    return initialCustomDashboards.map(parseDashboardDates);
   });
   // Load the last viewed dashboard ID from localStorage
   const [currentDashboard, setCurrentDashboard] = useState<Dashboard | null>(() => {
@@ -80,6 +135,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Save custom dashboards to localStorage whenever they change
   useEffect(() => {
+    console.log('SAVING customDashboards to localStorage:', customDashboardsState.map(d => ({id: d.id, name: d.name, charts: d.charts.length }) ));
     localStorage.setItem('customDashboards', JSON.stringify(customDashboardsState));
   }, [customDashboardsState]);
 
@@ -239,8 +295,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (saveType === 'saveAndPin') {
       if (dashboardId) {
         // Add chart to existing dashboard
-        setCustomDashboards(prev => 
-          prev.map(dashboard => 
+        setCustomDashboards(prev => {
+          const updatedDashboards = prev.map(dashboard => 
             dashboard.id === dashboardId 
               ? { 
                   ...dashboard, 
@@ -248,8 +304,15 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   updatedAt: new Date()
                 } 
               : dashboard
-          )
-        );
+          );
+          // If this was the current dashboard, update its state
+          const targetDashboard = updatedDashboards.find(d => d.id === dashboardId);
+          // Ensure currentDashboard is also updated if it's the one being modified
+          if (targetDashboard && currentDashboard?.id === dashboardId) { 
+            setCurrentDashboard(parseDashboardDates(targetDashboard));
+          }
+          return updatedDashboards; 
+        });
       } else if (newDashboardName) {
         // Create new dashboard and add chart
         const newDashboard: Dashboard = {
@@ -446,10 +509,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           : dashboard
       );
       localStorage.setItem('customDashboards', JSON.stringify(updatedDashboards));
-      // Update currentDashboard state if the modified dashboard is the current one
-      if (currentDashboard?.id === dashboardId) {
-        const updatedCurrent = updatedDashboards.find(d => d.id === dashboardId);
-        if (updatedCurrent) setCurrentDashboard(parseDashboardDates(updatedCurrent));
+      
+      // Ensure the currentDashboard state is updated to the version with the new chart
+      const targetDashboardWithNewChart = updatedDashboards.find(d => d.id === dashboardId);
+      if (targetDashboardWithNewChart) {
+        setCurrentDashboard(parseDashboardDates(targetDashboardWithNewChart));
       }
       return updatedDashboards.map(parseDashboardDates);
     });

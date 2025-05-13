@@ -39,13 +39,13 @@ const DeleteDashboardModal: React.FC<DeleteDashboardModalProps> = ({
             className="border-cobalt-blue text-cobalt-blue hover:bg-cobalt-blue/5 hover:text-cobalt-blue px-6"
           >
             NO
-          </Button>
+            </Button>
           <Button 
             className="bg-red-500 hover:bg-red-600 text-white px-6"
             onClick={onConfirm}
           >
             YES, REMOVE
-          </Button>
+                </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

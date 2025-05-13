@@ -66,7 +66,10 @@ const CreateFunnelPage: React.FC = () => {
     // Call the actual context function
     addNewChartToDashboard(originDashboardId, funnelChartData);
     toast({ title: "Success", description: `Chart '${finalFunnelName}' added to dashboard.`});
-    navigate('/');
+    // Add a small delay before navigating to allow state and localStorage to update
+    setTimeout(() => {
+      navigate('/');
+    }, 200); // 200ms delay, adjust if needed
   };
   const handleSaveAsNewCreate = () => { 
     console.log("Action: Save as New (New)", { funnelName });

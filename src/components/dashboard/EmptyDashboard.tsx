@@ -195,18 +195,18 @@ const EmptyDashboard: React.FC<EmptyDashboardProps> = ({ onAddAnalysis }) => {
         </div>
 
         <p className="text-base font-semibold text-[#6F6F8D] mb-[24px] tracking-[0.42px]">
-          Get started by adding an analysis to the new dashboard. (Content WIP)
+          Get started by adding a widget to the new dashboard. (Content WIP)
         </p>
 
         <div className="flex items-center justify-center gap-1.5 mb-[24px]">
           <span className="text-sm font-semibold text-[#6F6F8D] tracking-[0.42px]">Need help?</span>
           <a 
             href="#" 
-            onClick={(e) => { e.preventDefault(); console.log('Learn how to add analysis clicked'); }}
+            onClick={(e) => { e.preventDefault(); console.log('Learn how to add widget clicked'); }}
             className="flex items-center gap-1 text-sm font-semibold text-[#0A8FFD] hover:underline tracking-[0.42px]"
           >
             <Play size={18} className="text-[#0A8FFD]" />
-            Learn how to add analysis
+            Learn how to add widget
           </a>
       </div>
 
@@ -215,7 +215,7 @@ const EmptyDashboard: React.FC<EmptyDashboardProps> = ({ onAddAnalysis }) => {
             onClick={() => onAddAnalysis('funnel')} 
             className="bg-cobalt-blue hover:bg-cobalt-blue/90 text-white font-semibold uppercase text-sm h-8 w-[135px] px-[14px] py-[6px] gap-[6px] rounded-[4px] tracking-[0.42px] relative z-50 flex flex-row justify-center items-center"
           >
-            ADD ANALYSIS
+            ADD WIDGET
           </Button>
         </div>
       </div>

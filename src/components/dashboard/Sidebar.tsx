@@ -232,18 +232,18 @@ const Sidebar: React.FC = () => {
             )}
           </ul>
         </div>
-      </div> 
-
+        </div>
+        
       <div className="px-2 py-2 border-t border-gray-200 mt-auto"> 
         <Button 
           variant="ghost" 
           className="w-full justify-start text-sm text-netcore-sidebar-minimize hover:bg-gray-100 px-3 py-2.5"
           onClick={handleMinimizeClick}
-        >
+              >
           <ChevronLeft className="mr-2 h-4 w-4" />
           Minimize this
         </Button>
-      </div>
+        </div>
 
       {dashboardToDelete && (
         <DeleteDashboardModal

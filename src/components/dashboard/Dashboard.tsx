@@ -175,13 +175,13 @@ const Dashboard: React.FC = () => {
                       chart={chart} 
                       dashboardId={currentDashboard.id} 
                     />
-                  ))}
-                </div>
+            ))}
+          </div>
               </SortableContext>
             </DndContext>
-          ) : (
+        ) : (
             <EmptyDashboard onAddAnalysis={handleAddAnalysis} />
-          )}
+        )}
         </div>
       </div>
       <AddAnalysisModal 
