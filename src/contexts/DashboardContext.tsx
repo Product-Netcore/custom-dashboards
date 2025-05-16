@@ -218,13 +218,30 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const togglePinDashboard = (id: string) => {
-    setCustomDashboards(prev => 
-      prev.map(dashboard => 
-        dashboard.id === id 
-          ? { ...dashboard, isPinned: !dashboard.isPinned, updatedAt: new Date() } 
-          : dashboard
-      )
-    );
+    let newlyPinnedDashboard: Dashboard | null = null;
+    setCustomDashboards(prev => {
+      const updatedDashboards = prev.map(dashboard => {
+        if (dashboard.id === id) {
+          const updatedDashboard = { 
+            ...dashboard, 
+            isPinned: !dashboard.isPinned, 
+            updatedAt: new Date() 
+          };
+          if (updatedDashboard.isPinned) { // Check if the dashboard was pinned (not unpinned)
+            newlyPinnedDashboard = updatedDashboard;
+          }
+          return updatedDashboard;
+        }
+        return dashboard;
+      });
+      // After updating the state, if a dashboard was newly pinned, set it as current.
+      if (newlyPinnedDashboard) {
+        setCurrentDashboard(newlyPinnedDashboard);
+        // Optionally, also ensure the view is set to dashboard view
+        // setCurrentView('dashboard'); 
+      }
+      return updatedDashboards;
+    });
   };
 
   // --- Chart Manipulation Functions ---

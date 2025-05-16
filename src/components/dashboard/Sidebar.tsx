@@ -171,39 +171,44 @@ const Sidebar: React.FC = () => {
             {filteredDashboards.length > 0 ? (
               filteredDashboards.map((dashboard) => (
                 <li key={dashboard.id}>
-                  <div className="relative group flex items-center justify-between hover:bg-gray-100 rounded-md pr-1"> 
+                  <div className={cn(
+                        "relative group flex items-center justify-between rounded-md pr-1",
+                        currentDashboard?.id === dashboard.id 
+                          ? "bg-blue-100" 
+                          : "hover:bg-gray-100"
+                      )}>
                     <button
                       onClick={() => handleCustomDashboardClick(dashboard)}
                       className={cn(
-                        "flex-1 text-left px-3 py-2 text-sm truncate", 
+                        "flex-1 text-left px-3 py-2 text-sm truncate rounded-md",
                         currentDashboard?.id === dashboard.id
-                          ? "text-netcore-blue font-medium" 
+                          ? "text-netcore-blue font-medium"
                           : "text-gray-700"
                       )}
                       title={dashboard.name} 
                     >
                       {dashboard.name}
-                              </button>
-                        <TooltipProvider>
+                    </button>
+                    <TooltipProvider>
                       <Tooltip delayDuration={200}>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={(e) => handlePinClick(e, dashboard.id)}
-                                className={cn(
-                                "p-1 ml-1 rounded hover:bg-gray-200", 
-                                dashboard.isPinned 
-                                  ? "text-netcore-blue opacity-100" 
-                                  : "text-gray-400 opacity-0 group-hover:opacity-100"
-                                )}
-                              >
-                                <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
-                              </button>
-                            </TooltipTrigger>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => handlePinClick(e, dashboard.id)}
+                            className={cn(
+                              "p-1 ml-1 rounded hover:bg-gray-200", 
+                              dashboard.isPinned 
+                                ? "text-netcore-blue opacity-100" 
+                                : "text-gray-400 opacity-0 group-hover:opacity-100"
+                            )}
+                          >
+                            <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
+                          </button>
+                        </TooltipTrigger>
                         <TooltipContent side="right">
                           <p>{dashboard.isPinned ? 'Unpin' : 'Pin'} dashboard</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     <TooltipProvider> 
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
@@ -211,7 +216,7 @@ const Sidebar: React.FC = () => {
                               onClick={(e) => handleDeleteClick(e, dashboard)}
                               className={cn(
                                 "p-1 ml-1 rounded hover:bg-gray-200", 
-                                "text-gray-400 opacity-0 group-hover:opacity-100"
+                                "text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-600"
                               )}
                            >
                              <Trash2 className="h-4 w-4" />
