@@ -77,11 +77,15 @@ module.exports = {
         'netcore-chart-footer-link': '#143F93',
         'netcore-save-blue': '#007bff', // Existing blue, might need update
         'cobalt-blue': '#143F93', // Added Cobalt Blue
-        'profile-yellow': '#FDBA74', // Added for L1 Profile button (amber-400)
-        'accent-orange': '#F97316', // Added for L1 top border (orange-500)
-        'menu-item-hover-bg': '#F4F8FF', // For kebab menu item hover background
-        'menu-item-border': '#DDE2EE', // For kebab menu border
-        'charcoal': '#17173A', // For modal title
+        'profile-yellow': '#FFD700',
+        'accent-orange': '#FFA500',
+        'menu-item-hover-bg': '#F4F8FF',
+        'menu-item-border': '#DDE2EE',
+        'charcoal': '#17173A',
+        'soft-blue-shadow': '#DBE7FF',
+      },
+      borderRadius: {
+        // ... existing code ...
       },
     },
   },

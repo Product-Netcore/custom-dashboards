@@ -351,8 +351,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const target = customDashboardsState.find(d => d.id === targetDashboardId) || systemDashboardsState.find(d => d.id === targetDashboardId);
         if (target) {
             setCurrentDashboard(target);
-            setCurrentView('dashboard');
-        }
+        setCurrentView('dashboard');
+      }
     }
   };
 

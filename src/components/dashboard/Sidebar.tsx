@@ -163,7 +163,7 @@ const Sidebar: React.FC = () => {
                       placeholder="Search dashboards..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-sm rounded-md border-gray-300 focus:border-netcore-blue focus:ring-netcore-blue"
+              className="pl-8 h-9 text-sm rounded-md border-netcore-blue focus:border-cobalt-blue focus:ring-0 focus:shadow-[0_0_0_4px_#DBE7FF]"
             />
           </div>
           
@@ -188,27 +188,27 @@ const Sidebar: React.FC = () => {
                       title={dashboard.name} 
                     >
                       {dashboard.name}
-                    </button>
-                    <TooltipProvider>
+                              </button>
+                        <TooltipProvider>
                       <Tooltip delayDuration={200}>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={(e) => handlePinClick(e, dashboard.id)}
-                            className={cn(
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={(e) => handlePinClick(e, dashboard.id)}
+                                className={cn(
                               "p-1 ml-1 rounded hover:bg-gray-200", 
                               dashboard.isPinned 
                                 ? "text-netcore-blue opacity-100" 
                                 : "text-gray-400 opacity-0 group-hover:opacity-100"
-                            )}
-                          >
-                            <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
-                          </button>
-                        </TooltipTrigger>
+                                )}
+                              >
+                                <Pin className={cn("h-4 w-4", dashboard.isPinned ? "fill-current" : "")} />
+                              </button>
+                            </TooltipTrigger>
                         <TooltipContent side="right">
                           <p>{dashboard.isPinned ? 'Unpin' : 'Pin'} dashboard</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                     <TooltipProvider> 
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
