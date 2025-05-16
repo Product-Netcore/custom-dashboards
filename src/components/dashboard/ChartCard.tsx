@@ -50,7 +50,7 @@ interface ChartCardProps {
 }
 
 const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
-  const { removeChart, renameChart, toggleChartWidth, duplicateChart } = useDashboard();
+  const { removeChart, renameChart, duplicateChart } = useDashboard();
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -172,9 +172,9 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
   const isTruncated = chart.title.length > 25; // Adjust based on visual needs
 
   // Handler to toggle chart width using context function
-  const handleToggleWidth = () => {
-    toggleChartWidth(dashboardId, chart.id);
-  };
+  // const handleToggleWidth = () => {
+  //   toggleChartWidth(dashboardId, chart.id);
+  // };
 
   // --- Time formatting for chart card footer ---
   const formatRelativeTime = (date: Date): string => {
@@ -242,7 +242,7 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
         style={style}
         className={cn(
           "flex flex-col bg-white border border-menu-item-border rounded-[5px] shadow-sm group",
-          chart.isFullWidth && "md:col-span-2"
+          "md:col-span-2" // Always apply md:col-span-2 for expanded view
         )}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -365,13 +365,6 @@ const ChartCard: React.FC<ChartCardProps> = ({ chart, dashboardId }) => {
                 align="end" 
                 className="w-[274px] bg-white border-menu-item-border shadow-lg rounded-md p-0"
               >
-                <DropdownMenuItem 
-                  className={cn(menuItemBaseClass, menuItemHoverClass)}
-                  onClick={handleToggleWidth}
-                >
-                  <span>{chart.isFullWidth ? "Minimize" : "Expand"}</span> 
-                  {chart.isFullWidth ? <Minimize className={iconClass} /> : <Expand className={iconClass} />}
-                </DropdownMenuItem>
                 <DropdownMenuItem 
                   className={cn(menuItemBaseClass, menuItemHoverClass)}
                   onClick={handleDuplicateChart}

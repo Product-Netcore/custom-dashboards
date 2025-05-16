@@ -23,7 +23,6 @@ interface DashboardContextProps {
   togglePinDashboard: (id: string) => void;
   saveChart: (chart: Chart, options: SaveChartOptions) => void;
   removeChart: (dashboardId: string, chartId: string) => void;
-  toggleChartWidth: (dashboardId: string, chartId: string) => void;
   addChartFromTemplate: (dashboardId: string, chartName: string, templateId: string, analysisType: ChartType) => void;
   reorderCharts: (dashboardId: string, startIndex: number, endIndex: number) => void;
   renameChart: (dashboardId: string, chartId: string, newTitle: string) => void;
@@ -40,15 +39,15 @@ const parseDashboardDates = (dashboard: Dashboard): Dashboard => {
   try {
     const charts = Array.isArray(dashboard.charts) ? dashboard.charts.map(chart => ({
       ...chart,
-      createdAt: chart.createdAt ? new Date(chart.createdAt) : new Date(), // Fallback
-      updatedAt: chart.updatedAt ? new Date(chart.updatedAt) : new Date(), // Fallback
+      createdAt: chart.createdAt ? new Date(chart.createdAt) : new Date(),
+      updatedAt: chart.updatedAt ? new Date(chart.updatedAt) : new Date(),
       isBodyHidden: chart.isBodyHidden ?? false,
     })) : [];
 
     return {
       ...dashboard,
-      createdAt: dashboard.createdAt ? new Date(dashboard.createdAt) : new Date(), // Fallback
-      updatedAt: dashboard.updatedAt ? new Date(dashboard.updatedAt) : new Date(), // Fallback
+      createdAt: dashboard.createdAt ? new Date(dashboard.createdAt) : new Date(),
+      updatedAt: dashboard.updatedAt ? new Date(dashboard.updatedAt) : new Date(),
       charts,
     };
   } catch (error) {
@@ -262,15 +261,20 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     updateChartsInDashboard(dashboardId, charts => charts.filter(chart => chart.id !== chartId));
   };
 
-  const toggleChartWidth = (dashboardId: string, chartId: string) => {
-    updateChartsInDashboard(dashboardId, charts =>
-      charts.map(chart =>
-        chart.id === chartId ? { ...chart, isFullWidth: !chart.isFullWidth } : chart
-      )
-    );
+  // const toggleChartWidth = (dashboardId: string, chartId: string) => {
+  //   updateChartsInDashboard(dashboardId, charts =>
+  //     charts.map(chart =>
+  //       chart.id === chartId ? { ...chart, isFullWidth: !chart.isFullWidth } : chart
+  //     )
+  //   );
+  // };
+
+  // Helper function to find a chart within a dashboard's charts array
+  const findChart = (dashboardId: string, chartId: string): Chart | undefined => {
+    const dashboard = [...systemDashboardsState, ...customDashboardsState].find(d => d.id === dashboardId);
+    return dashboard?.charts.find(c => c.id === chartId);
   };
 
-  // Added: Reorder charts within a dashboard
   const reorderCharts = (dashboardId: string, startIndex: number, endIndex: number) => {
     updateChartsInDashboard(dashboardId, currentCharts => {
       const result = Array.from(currentCharts);
@@ -280,7 +284,6 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
-  // Added: Rename a specific chart
   const renameChart = (dashboardId: string, chartId: string, newTitle: string) => {
       updateChartsInDashboard(dashboardId, charts =>
         charts.map(chart =>
@@ -290,233 +293,142 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const saveChart = (chart: Chart, options: SaveChartOptions) => {
-    const { saveType, dashboardId, newDashboardName } = options;
+    const { saveType, dashboardId, newDashboardName, chartName, description } = options;
+
+    // Helper to create the chart object
+    const createChartObject = (baseChart: Chart, title?: string, desc?: string): Chart => ({
+      ...baseChart,
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      title: title || baseChart.title,
+      description: desc || baseChart.description,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    if (saveType === 'analysisOnly') {
+      // Logic for saving analysis only (e.g., to a global list, not covered here yet)
+      console.log("Analysis saved (globally):", chart);
+      toast({ title: "Success", description: `Analysis '${chart.title}' saved.` });
+      return;
+    }
+
+    let targetDashboardId = dashboardId;
+
+    if (saveType === 'saveAsNew' && newDashboardName) {
+      const newDashboard = createDashboard(newDashboardName);
+      targetDashboardId = newDashboard.id;
+    }
+
+    if (!targetDashboardId) {
+      toast({ title: "Error", description: "No target dashboard specified for saving the chart.", variant: "destructive" });
+      return;
+    }
     
-    if (saveType === 'saveAndPin') {
-      if (dashboardId) {
-        // Add chart to existing dashboard
-        setCustomDashboards(prev => {
-          const updatedDashboards = prev.map(dashboard => 
-            dashboard.id === dashboardId 
-              ? { 
-                  ...dashboard, 
-                  charts: [...dashboard.charts, { ...chart, id: `chart-${Date.now()}` }],
-                  updatedAt: new Date()
-                } 
-              : dashboard
-          );
-          // If this was the current dashboard, update its state
-          const targetDashboard = updatedDashboards.find(d => d.id === dashboardId);
-          // Ensure currentDashboard is also updated if it's the one being modified
-          if (targetDashboard && currentDashboard?.id === dashboardId) { 
-            setCurrentDashboard(parseDashboardDates(targetDashboard));
-          }
-          return updatedDashboards; 
-        });
-      } else if (newDashboardName) {
-        // Create new dashboard and add chart
-        const newDashboard: Dashboard = {
-          id: `dashboard-${Date.now()}`,
-          name: newDashboardName,
-          type: 'custom',
-          charts: [{ ...chart, id: `chart-${Date.now()}` }],
-          isPinned: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        setCustomDashboards(prev => [...prev, newDashboard]);
-        setCurrentDashboard(newDashboard);
-        setCurrentView('dashboard');
-      }
+    const chartToSave = createChartObject(chart, chartName, description);
+
+    updateChartsInDashboard(targetDashboardId, currentCharts => [...currentCharts, chartToSave]);
+    toast({ title: "Success", description: `Chart '${chartToSave.title}' saved to dashboard.` });
+    
+    // Switch to the target dashboard if it's not the current one
+    if (currentDashboard?.id !== targetDashboardId) {
+        const target = customDashboardsState.find(d => d.id === targetDashboardId) || systemDashboardsState.find(d => d.id === targetDashboardId);
+        if (target) {
+            setCurrentDashboard(target);
+            setCurrentView('dashboard');
+        }
     }
   };
 
   // New function to add chart from a template (e.g., existing funnel)
   const addChartFromTemplate = (dashboardId: string, chartName: string, templateId: string, analysisType: ChartType) => {
-    // Find the template (assuming only funnels for now)
     const template = mockFunnelTemplates.find(t => t.id === templateId);
     if (!template) {
       console.error(`Template with ID ${templateId} not found.`);
-      throw new Error('Template not found'); // Throw error to be caught in modal
+      throw new Error('Template not found');
     }
-
-    // Use provided chart name, or fall back to template name if empty
     const finalChartName = chartName || template.name;
-
-    // Create a new chart based on the template
     const newChart: Chart = {
-      id: `chart-${Date.now()}`,
-      title: finalChartName, // Use the final name
-      description: template.description, // Use description from template
-      type: analysisType, // Set the correct analysis type
-      displayMode: 'chart', // Default display mode
-      isFullWidth: false,
-      data: { /* Mock or template-specific data structure */
-        templateOrigin: templateId, // Store reference to template
-        labels: ['Step 1', 'Step 2', 'Step 3'], // Example data
-        values: [100, 75, 50] // Example data
-      },
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      title: finalChartName,
+      description: template.description,
+      type: analysisType,
+      displayMode: 'chart',
+      data: { ...template.data },
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
-
-    // Add the new chart to the correct custom dashboard
-    setCustomDashboards(prev => {
-      const updatedDashboards = prev.map(dashboard =>
-        dashboard.id === dashboardId
-          ? { ...dashboard, charts: [...dashboard.charts, newChart], updatedAt: new Date() }
-          : dashboard
-      );
-
-      // Find the updated dashboard
-      const targetDashboard = updatedDashboards.find(d => d.id === dashboardId);
-
-      if (targetDashboard) {
-         // If the target dashboard is the current one, update the currentDashboard state
-        if (currentDashboard?.id === dashboardId) {
-          setCurrentDashboard(targetDashboard);
-        }
-        // If it wasn't the current one, switch to it (optional behavior, keeping it for now)
-        else if (currentDashboard?.id !== dashboardId) {
-          setCurrentDashboard(targetDashboard);
-          setCurrentView('dashboard'); 
-        }
-      }
-      return updatedDashboards; // Return the updated list
-    });
+    updateChartsInDashboard(dashboardId, charts => [...charts, newChart]);
   };
 
   const duplicateChart = (dashboardId: string, chartId: string) => {
-    setCustomDashboards(prev => {
-      const newDashboards = prev.map(dashboard => {
-        if (dashboard.id === dashboardId) {
-          const chartIndex = dashboard.charts.findIndex(c => c.id === chartId);
-          if (chartIndex === -1) return dashboard; // Chart not found
+    const chartToDuplicate = findChart(dashboardId, chartId);
+    if (!chartToDuplicate) return;
 
-          const originalChart = dashboard.charts[chartIndex];
-          const newId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-          const now = new Date();
+    // Destructure to omit isFullWidth explicitly if it somehow still exists on the old type in memory
+    const { isFullWidth, ...restOfChartToDuplicate } = chartToDuplicate as any;
 
-          const duplicatedChart: Chart = {
-            ...JSON.parse(JSON.stringify(originalChart)), // Deep copy
-            id: newId,
-            title: `Copy of ${originalChart.title}`,
-            createdAt: now,
-            updatedAt: now,
-          };
-
-          const newCharts = [...dashboard.charts];
-          newCharts.splice(chartIndex + 1, 0, duplicatedChart); // Insert after original
-          return { ...dashboard, charts: newCharts, updatedAt: now };
-        }
-        return dashboard;
-      });
-      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
-      // Update currentDashboard if the change happened there
-      const updatedCurrentDashboard = newDashboards.find(d => d.id === currentDashboard?.id);
-      if (updatedCurrentDashboard) {
-        setCurrentDashboard(parseDashboardDates(updatedCurrentDashboard));
-      }
-      return newDashboards.map(parseDashboardDates);
-    });
-    toast({ title: "Chart duplicated", description: "A copy of the chart has been added to this dashboard." });
-  };
-
-  const addChartToExistingDashboard = (targetDashboardId: string, chartToCopy: Chart) => {
-    setCustomDashboards(prev => {
-      const newDashboards = prev.map(dashboard => {
-        if (dashboard.id === targetDashboardId) {
-          const newId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
-          const now = new Date();
-          const copiedChart: Chart = {
-            ...JSON.parse(JSON.stringify(chartToCopy)), // Deep copy
-            id: newId,
-            createdAt: now,
-            updatedAt: now,
-          };
-          return { ...dashboard, charts: [...dashboard.charts, copiedChart], updatedAt: now };
-        }
-        return dashboard;
-      });
-      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
-      // Note: We don't necessarily switch view here
-      return newDashboards.map(parseDashboardDates);
-    });
-  };
-
-  const createDashboardWithChart = (newDashboardName: string | undefined, chartToCopy: Chart) => {
-    let name = newDashboardName?.trim();
-    if (!name) {
-      // Find the highest existing number for default naming
-      let maxNum = 0;
-      customDashboardsState.forEach(d => {
-        if (d.name.startsWith("Custom dashboard ")) {
-          const num = parseInt(d.name.substring("Custom dashboard ".length), 10);
-          if (!isNaN(num) && num > maxNum) {
-            maxNum = num;
-          }
-        }
-      });
-      name = `Custom dashboard ${maxNum + 1}`; 
-    }
-
-    const newDashboardId = Date.now().toString(36) + Math.random().toString(36).substring(2, 9); 
-    const now = new Date();
-
-    const newChartId = Date.now().toString(36) + Math.random().toString(36).substring(2, 10); // Slightly different random part
-    const copiedChart: Chart = {
-      ...JSON.parse(JSON.stringify(chartToCopy)), // Deep copy
-      id: newChartId,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const newDashboard: Dashboard = {
-      id: newDashboardId,
-      name: name,
-      type: 'custom',
-      charts: [copiedChart],
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setCustomDashboards(prev => {
-      const newDashboards = [...prev, newDashboard];
-      localStorage.setItem('customDashboards', JSON.stringify(newDashboards));
-       // Optionally switch to the new dashboard
-      // setCurrentDashboard(parseDashboardDates(newDashboard));
-      // setCurrentView('dashboard');
-      // setLastViewedDashboardId(newDashboardId); 
-      return newDashboards.map(parseDashboardDates);
-    });
-    toast({ title: "Dashboard Created", description: `Dashboard "${name}" created with chart "${chartToCopy.title}".` });
-  };
-
-  // Function to add a brand new chart (created by user) to a dashboard
-  const addNewChartToDashboard = (dashboardId: string, chartData: Omit<Chart, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newChart: Chart = {
-      ...chartData,
-      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`, // More robust ID
+      ...restOfChartToDuplicate,
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      title: `Copy of ${chartToDuplicate.title}`,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    setCustomDashboards(prev => {
-      const updatedDashboards = prev.map(dashboard =>
-        dashboard.id === dashboardId
-          ? { ...dashboard, charts: [...dashboard.charts, newChart], updatedAt: new Date() }
-          : dashboard
-      );
-      localStorage.setItem('customDashboards', JSON.stringify(updatedDashboards));
-      
-      // Ensure the currentDashboard state is updated to the version with the new chart
-      const targetDashboardWithNewChart = updatedDashboards.find(d => d.id === dashboardId);
-      if (targetDashboardWithNewChart) {
-        setCurrentDashboard(parseDashboardDates(targetDashboardWithNewChart));
-      }
-      return updatedDashboards.map(parseDashboardDates);
+    updateChartsInDashboard(dashboardId, charts => {
+      const index = charts.findIndex(c => c.id === chartId);
+      if (index === -1) return [...charts, newChart]; // Should not happen if findChart worked
+      const newCharts = [...charts];
+      newCharts.splice(index + 1, 0, newChart);
+      return newCharts;
     });
+  };
+
+  const addChartToExistingDashboard = (targetDashboardId: string, chartToCopy: Chart) => {
+    // Destructure to omit isFullWidth explicitly if it somehow still exists on the old type in memory
+    const { id, createdAt, updatedAt, isFullWidth, ...restOfChartToCopy } = chartToCopy as any;
+
+    const newChart: Chart = {
+      ...restOfChartToCopy,
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    updateChartsInDashboard(targetDashboardId, charts => [...charts, newChart]);
+  };
+
+  const createDashboardWithChart = (newDashboardName: string | undefined, chartToCopy: Chart) => {
+    const dashboardName = newDashboardName?.trim() || "Untitled Dashboard";
+    const newDashboard = createDashboard(dashboardName); // createDashboard already sets dates
+
+    // Destructure to omit isFullWidth explicitly if it somehow still exists on the old type in memory
+    const { id, createdAt, updatedAt, isFullWidth, ...restOfChartToCopy } = chartToCopy as any;
+    
+    const newChartForDashboard: Chart = {
+      ...restOfChartToCopy,
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    updateChartsInDashboard(newDashboard.id, () => [newChartForDashboard]);
+    setCurrentDashboard(newDashboard);
+    setCurrentView('dashboard');
+    toast({ title: "Success", description: `Dashboard '${dashboardName}' created with chart '${newChartForDashboard.title}'.`});
+  };
+
+  // Function to add a brand new chart (created by user) to a dashboard
+  const addNewChartToDashboard = (dashboardId: string, chartData: Omit<Chart, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Destructure to omit isFullWidth explicitly if it somehow still exists on the old type in memory
+    const { isFullWidth, ...restOfChartData } = chartData as any;
+
+    const newChart: Chart = {
+      id: `chart-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 9)}`,
+      ...restOfChartData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    updateChartsInDashboard(dashboardId, charts => [...charts, newChart]);
 
     toast({
       title: "Analysis Saved",
@@ -546,7 +458,6 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         togglePinDashboard,
         saveChart,
         removeChart,
-        toggleChartWidth,
         addChartFromTemplate,
         reorderCharts,
         renameChart,
