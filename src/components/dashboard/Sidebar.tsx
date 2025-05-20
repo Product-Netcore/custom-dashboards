@@ -163,7 +163,7 @@ const Sidebar: React.FC = () => {
                       placeholder="Search dashboards..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-sm rounded-md border-netcore-blue focus:border-cobalt-blue focus:ring-0 focus:shadow-[0_0_0_4px_#DBE7FF]"
+              className="pl-8 h-9 text-sm rounded-md border-gray-300 focus:border-gray-500 focus:ring-0 focus:shadow-[0_0_0_4px_#E5E7EB]"
             />
           </div>
           
