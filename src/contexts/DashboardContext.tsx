@@ -71,7 +71,6 @@ const parseDashboardDates = (dashboard: Dashboard): Dashboard => {
 
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [systemDashboardsState, setSystemDashboards] = useState<Dashboard[]>(systemDashboards);
-  // Load custom dashboards from localStorage or use initial mock data
   const [customDashboardsState, setCustomDashboards] = useState<Dashboard[]>(() => {
     const savedDashboardsString = localStorage.getItem('customDashboards');
     console.log('LOADING customDashboards from localStorage string:', savedDashboardsString);
@@ -120,17 +119,31 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     console.log('No valid saved dashboards in localStorage or empty after parsing, using initialCustomDashboards.');
     return initialCustomDashboards.map(parseDashboardDates);
   });
-  // Load the last viewed dashboard ID from localStorage
-  const [currentDashboard, setCurrentDashboard] = useState<Dashboard | null>(() => {
+  const [currentDashboard, _setCurrentDashboard] = useState<Dashboard | null>(() => {
     const lastDashboardId = localStorage.getItem('lastDashboardId');
     const allDashboards = [...systemDashboards, ...customDashboardsState];
     const foundDashboard = allDashboards.find(d => d.id === lastDashboardId);
     return foundDashboard || systemDashboards[0]; // Default to first system dashboard
   });
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
+  const [currentViewInternal, _setCurrentViewInternal] = useState<ViewType>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { toast } = useToast();
+
+  // Custom setCurrentView with logging
+  const setCurrentView = useCallback((view: ViewType) => {
+    console.log(`[DashboardContext] setCurrentView called with: ${view}. Previous: ${currentViewInternal}`);
+    _setCurrentViewInternal(view);
+  }, [currentViewInternal]);
+
+  // Wrapped setCurrentDashboard with logging (optional, but good for tracing)
+  const setCurrentDashboard = useCallback((dashboard: Dashboard | null) => {
+    console.log(`[DashboardContext] setCurrentDashboard called. New dashboard: ${dashboard?.name ?? 'null'}.`);
+    _setCurrentDashboard(dashboard);
+    // If setting a dashboard *always* implies view should be 'dashboard', it needs to be here:
+    // However, be careful not to override intentional 'insightGenerator' views.
+    // Example: if (dashboard) setCurrentView('dashboard'); // This could be a problem source
+  }, []);
 
   // Save custom dashboards to localStorage whenever they change
   useEffect(() => {
@@ -238,7 +251,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (newlyPinnedDashboard) {
         setCurrentDashboard(newlyPinnedDashboard);
         // Optionally, also ensure the view is set to dashboard view
-        // setCurrentView('dashboard'); 
+        // setCurrentView('dashboard'); // This line is correctly commented, but shows intent
       }
       return updatedDashboards;
     });
@@ -464,10 +477,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         customDashboards: customDashboardsState,
         filteredDashboards,
         currentDashboard,
-        currentView,
+        currentView: currentViewInternal, // Use the internal state variable for the value
         searchQuery,
-        setCurrentDashboard,
-        setCurrentView,
+        setCurrentDashboard, // Use wrapped setter
+        setCurrentView,    // Use wrapped setter
         setSearchQuery,
         createDashboard,
         renameDashboard,

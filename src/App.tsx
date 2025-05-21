@@ -19,24 +19,24 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <BrowserRouter>
-            <DashboardProvider>
-          <div className="flex flex-1 pt-16"> 
-            <L1Panel />
-                <main className="flex-1 pl-16 h-[calc(100vh-4rem)] overflow-y-auto bg-transparent"> 
-              {/* Main content area where routes are rendered */}
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                      <Route path="/create-funnel" element={<CreateFunnelPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-            </main>
-          </div>
-            </DashboardProvider>
-          </BrowserRouter>
-        </div>
+        <BrowserRouter>
+          <DashboardProvider>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <div className="flex flex-1 pt-16">
+                <L1Panel />
+                <main className="flex-1 pl-16 h-[calc(100vh-4rem)] overflow-y-auto bg-transparent">
+                  {/* Main content area where routes are rendered */}
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/create-funnel" element={<CreateFunnelPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
+            </div>
+          </DashboardProvider>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );

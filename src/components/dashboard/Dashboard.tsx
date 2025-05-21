@@ -109,10 +109,13 @@ const Dashboard: React.FC = () => {
     }
   }
 
+  // Log currentView before checking for insightGenerator
+  console.log('[Dashboard.tsx] currentView:', currentView);
+
   // Show Insight Generator when selected
   if (currentView === 'insightGenerator') {
     return (
-      <div className="flex-1 bg-netcore-dashboard-bg p-6">
+      <div className="flex-1 bg-netcore-dashboard-bg p-6 h-full flex flex-col">
         <InsightGenerator />
       </div>
     );
